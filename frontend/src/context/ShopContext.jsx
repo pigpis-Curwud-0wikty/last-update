@@ -31,8 +31,23 @@ const ShopContextProvider = (props) => {
   const refreshToken = async () => {
     try {
       const refreshTokenValue = localStorage.getItem("refreshToken");
+      const userData = localStorage.getItem("user");
+      
       if (!refreshTokenValue) {
         console.log("No refresh token available");
+        return false;
+      }
+
+      if (!userData) {
+        console.log("No user data available");
+        return false;
+      }
+
+      const user = JSON.parse(userData);
+      const userId = user.id || user.userId;
+
+      if (!userId) {
+        console.log("No user ID available");
         return false;
       }
 
@@ -43,6 +58,7 @@ const ShopContextProvider = (props) => {
         },
         body: JSON.stringify({
           refreshToken: refreshTokenValue,
+          userId: userId,
         }),
       });
 
@@ -131,35 +147,30 @@ const ShopContextProvider = (props) => {
       return;
     }
 
-    // Check if item with same ID and size already exists in cart
+    const itemKey = `${size}_${color}`; // Create unique key for size+color combination
+
+    // Check if item with same ID, size, and color already exists in cart
     let itemExists = false;
-    for (const items in cartItems) {
-      if (items === itemId && cartItems[items][size]) {
-        itemExists = true;
-        break;
-      }
+    if (cartItems[itemId] && cartItems[itemId][itemKey]) {
+      itemExists = true;
     }
 
     if (itemExists) {
-      toast.error("Item already in cart");
+      toast.error("Item with this size and color is already in cart");
       return;
-    } else {
-      toast.success("Item added to cart");
     }
+
+    // Add item to cart
     let cartData = structuredClone(cartItems);
-    const itemKey = `${size}_${color}`; // Create unique key for size+color combination
     if (cartData[itemId]) {
-      if (cartData[itemId][itemKey]) {
-        cartData[itemId][itemKey] += quantity;
-      } else {
-        cartData[itemId][itemKey] = quantity;
-      }
+      cartData[itemId][itemKey] = quantity;
     } else {
       cartData[itemId] = {};
       cartData[itemId][itemKey] = quantity;
     }
     setCartItems(cartData);
 
+    // Handle server-side cart update if user is logged in
     if (token) {
       try {
         console.log("Adding to cart with token:", token);
@@ -167,6 +178,8 @@ const ShopContextProvider = (props) => {
 
         if (!productVariantId) {
           toast.error("No variant found for the selected size. Please try a different size.");
+          // Revert local cart changes
+          setCartItems(cartItems);
           return;
         }
 
@@ -193,15 +206,24 @@ const ShopContextProvider = (props) => {
 
         if (response.ok && data.responseBody) {
           toast.success(data.responseBody.message || "Product added to cart");
+          await fetchUserCart();
+
         } else {
           const errorMessage = data.responseBody?.message || data.message || "Failed to add product to cart";
           toast.error(errorMessage);
           console.error("Add to cart error:", data);
+          // Revert local cart changes on server error
+          setCartItems(cartItems);
         }
       } catch (error) {
         console.error("Add to cart error:", error);
         toast.error("Error adding product to cart. Please try again.");
+        // Revert local cart changes on error
+        setCartItems(cartItems);
       }
+    } else {
+      // Show success message for guest users
+      toast.success("Product added to cart");
     }
   };
 
@@ -301,91 +323,86 @@ const ShopContextProvider = (props) => {
     }
   };
 
-  // Fetch user's cart data from the backend
   const fetchUserCart = async () => {
-    console.log("fetchUserCart called, token:", token);
-    if (token) {
-      try {
-        console.log("Making request to GET /api/Cart with token:", token);
-        const res = await fetch(`${backendUrl}/api/Cart`, {
-          headers: getAuthHeaders(),
+    if (!token) return;
+    
+    try {
+      console.log("Fetching user cart from server...");
+      const response = await fetchWithTokenRefresh(
+        `${backendUrl}/api/Cart`,
+        {
           method: "GET",
-        });
-        const data = await res.json();
-        // Transform Fashion-main cart into local cartItems shape
-        const items = data?.responseBody?.data?.items || [];
+          headers: getAuthHeaders(),
+        },
+        refreshToken
+      );
 
-        // If backend cart is empty but we have local cart items, don't overwrite
-        if (items.length === 0 && Object.keys(cartItems).length > 0) {
-          console.log("Backend cart is empty but local cart has items, keeping local cart");
-          return;
-        }
-
-        const mapped = {};
-        for (const it of items) {
-          const pid = String(it.productId || it.product?.id);
-          const sizeLabel =
-            it.product?.productVariantForCartDto?.size || "default";
-          if (!pid) continue;
-          if (!mapped[pid]) mapped[pid] = {};
-          mapped[pid][String(sizeLabel)] = it.quantity || 1;
-        }
-        console.log("Setting cart items from backend:", mapped);
-        setCartItems(mapped);
-      } catch (error) {
-        console.log("Error fetching cart:", error.message);
-        if (error.response) {
-          console.log(
-            "Error response:",
-            error.response.status,
-            error.response.data
-          );
-        }
-      }
-    } else {
-      console.log("No token available, skipping cart fetch");
-    }
-  };
-
-  // Clear user's cart data
-  const checkout = async () => {
-    if (token) {
-      try {
-        const response = await fetchWithTokenRefresh(
-          `${backendUrl}/api/Cart/checkout`,
-          {
-            method: "POST",
-            headers: getAuthHeaders(),
-          },
-          refreshToken
-        );
-
+      if (response.ok) {
         const data = await response.json();
-        if (response.ok && data.responseBody) {
-          setCartItems({});
-          toast.success(data.responseBody.message || "Checkout successful");
-          return true;
+        console.log("Cart fetch response:", data);
+        
+        if (data.responseBody && data.responseBody.data) {
+          let serverCartItems = data.responseBody.data;
+          
+          // Handle different response structures
+          if (serverCartItems.items) {
+            serverCartItems = serverCartItems.items;
+          }
+          
+          // Ensure we have an array
+          if (!Array.isArray(serverCartItems)) {
+            console.log("Server cart data is not an array:", serverCartItems);
+            setCartItems({});
+            return;
+          }
+          
+          // Transform server cart format to local cart format
+          const transformedCart = {};
+          serverCartItems.forEach(item => {
+            const productId = item.productId || item.product?.id;
+            const size = item.productVariant?.size || item.size || 'default';
+            const color = item.productVariant?.color || item.color || 'default';
+            const quantity = item.quantity || 1;
+            
+            if (productId) {
+              const itemKey = `${size}_${color}`;
+              if (!transformedCart[productId]) {
+                transformedCart[productId] = {};
+              }
+              transformedCart[productId][itemKey] = quantity;
+            }
+          });
+          
+          console.log("Transformed cart:", transformedCart);
+          setCartItems(transformedCart);
         } else {
-          toast.error(data.responseBody?.message || "Checkout failed");
-          return false;
+          console.log("No cart data in response");
+          setCartItems({});
         }
-      } catch (error) {
-        console.log("Error during checkout:", error.message);
-        if (error.response) {
-          console.log(
-            "Error response:",
-            error.response.status,
-            error.response.data
-          );
-        }
-        toast.error("Checkout failed");
-        return false;
+      } else {
+        console.log("Failed to fetch cart:", response.status);
+        setCartItems({});
       }
-    } else {
-      toast.error("Please log in to checkout");
-      return false;
+    } catch (error) {
+      console.error("Error fetching user cart:", error);
     }
   };
+
+  // Fetch user's cart data from the backend
+  useEffect(() => {
+    getProducts();
+    clearLocalStorageCart();
+  }, []);
+
+  useEffect(() => {
+    if (token) {
+      console.log("Token available, fetching user cart...");
+      fetchUserCart();
+    } else {
+      console.log("No token, clearing cart");
+      setCartItems({});
+    }
+  }, [token]);
 
   const clearCart = async () => {
     if (token) {
@@ -419,44 +436,49 @@ const ShopContextProvider = (props) => {
     }
   };
 
-  useEffect(() => {
-    getProducts();
-  }, []);
+  const clearLocalStorageCart = () => {
+    localStorage.removeItem("cartItems");
+  };
 
-  useEffect(() => {
-    const syncCartFromLocalStorage = () => {
+  const checkout = async () => {
+    if (token) {
       try {
-        const storedCart = localStorage.getItem("cartItems");
-        if (storedCart) {
-          const parsedCart = JSON.parse(storedCart);
-          if (JSON.stringify(parsedCart) !== JSON.stringify(cartItems)) {
-            console.log("Syncing cart from localStorage:", parsedCart);
-            setCartItems(parsedCart);
-          }
+        const response = await fetchWithTokenRefresh(
+          `${backendUrl}/api/Cart/checkout`,
+          {
+            method: "POST",
+            headers: getAuthHeaders(),
+          },
+          refreshToken
+        );
+
+        const data = await response.json();
+        if (response.ok && data.responseBody) {
+          // Instead of just clearing locally, fetch the actual cart state from server
+          await fetchUserCart();
+          toast.success(data.responseBody.message || "Checkout successful");
+          return true;
+        } else {
+          toast.error(data.responseBody?.message || "Checkout failed");
+          return false;
         }
       } catch (error) {
-        console.error("Error syncing cart from localStorage:", error);
-      } 
-    };
-
-    // Check for sync on component mount and periodically
-    syncCartFromLocalStorage();
-    const interval = setInterval(syncCartFromLocalStorage, 1000);
-    
-    return () => clearInterval(interval);
-  }, []);
-
-  useEffect(() => {
-    console.log("Token changed - fetchUserCart disabled to preserve cart");
-  }, [token]);
-
-  useEffect(() => {
-    console.log("Saving cart to localStorage:", cartItems);
-    // Only save to localStorage if cartItems is not empty or if we're explicitly clearing it
-    if (Object.keys(cartItems).length > 0 || cartItems === null) {
-      localStorage.setItem("cartItems", JSON.stringify(cartItems));
+        console.log("Error during checkout:", error.message);
+        if (error.response) {
+          console.log(
+            "Error response:",
+            error.response.status,
+            error.response.data
+          );
+        }
+        toast.error("Checkout failed");
+        return false;
+      }
+    } else {
+      toast.error("Please log in to checkout");
+      return false;
     }
-  }, [cartItems]);
+  };
 
   const value = {
     products,
@@ -481,7 +503,9 @@ const ShopContextProvider = (props) => {
     setToken,
     refreshToken,
     user,
-    setUser
+    setUser,
+    clearLocalStorageCart,
+    fetchUserCart
   };
 
   return (

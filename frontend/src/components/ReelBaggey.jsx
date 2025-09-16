@@ -70,15 +70,16 @@ const ReelBaggey = () => {
 
     return (
         <motion.div
-            className="mx-auto px-4 sm:px-[2vw] md:px-[2vw] lg:px-[3vw] py-8"
+            className="w-full mx-auto px-4 sm:px-6 md:px-8 lg:px-12 py-8"
             initial="hidden"
-            animate="visible"
+            whileInView="visible"
+            viewport={{ once: true, amount: 0.1, margin: "-100px" }}
             variants={{
-                hidden: { opacity: 0, y: 60 },
+                hidden: { opacity: 0, y: 30 },
                 visible: {
                     opacity: 1,
                     y: 0,
-                    transition: { duration: 0.7, ease: "easeOut" },
+                    transition: { duration: 0.6, ease: "easeOut" },
                 },
             }}
         >
@@ -93,19 +94,18 @@ const ReelBaggey = () => {
             ) : (
                 <>
                     {/* Subcategory Header */}
-                    <div className="text-center mb-8 text-start">
-                        <h1 className="text-2xl tracking-wide mb-4 uppercase">
+                    <div className="text-center mb-6 sm:mb-8">
+                        <h1 className="text-xl sm:text-2xl md:text-3xl tracking-wide mb-3 sm:mb-4 uppercase">
                             <Title text1={t('REEL')} text2={t('BAGGEY_COLLECTION')} />
                         </h1>
-                        <p className="text-gray-600 max-w-3xl">
+                        <p className="text-gray-600 text-sm sm:text-base max-w-3xl mx-auto px-4">
                             {t('BAGGIEST_DENIM')}
                         </p>
                     </div>
 
-
                     {/* Products Grid */}
                     {baggeyProducts.length > 0 ? (
-                        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+                        <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4 md:gap-6">
                             {baggeyProducts.slice(0, 8).map((product) => (
                                 <ProductCard 
                                     key={product.id} 
@@ -115,7 +115,7 @@ const ReelBaggey = () => {
                         </div>
                     ) : (
                         <div className="text-center text-gray-500 my-8">
-                            <p>{t('NO_BAGGEY_PRODUCTS')}</p>
+                            <p className="text-sm sm:text-base">{t('NO_BAGGEY_PRODUCTS')}</p>
                         </div>
                     )}
                 </>
