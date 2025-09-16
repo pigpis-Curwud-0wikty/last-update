@@ -21,7 +21,7 @@ import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
 export const currency = "$";
-// eslint-disable-next-line react-refresh/only-export-components
+
 export const backendUrl = import.meta.env.VITE_BACKEND_URL;
 
 function App() {
