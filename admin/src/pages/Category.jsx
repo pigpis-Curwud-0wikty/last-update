@@ -5,11 +5,11 @@ import { backendUrl } from "../App";
 import { useParams, useLocation, useNavigate } from "react-router-dom";
 
 // Import components
-import AddCategory from "../components/category/AddCategory";
-import ViewCategory from "../components/category/ViewCategory";
-import ListCategory from "../components/category/ListCategory";
-import AddSubCategory from "../components/category/AddSubCategory";
-import ListSubCategory from "../components/category/ListSubCategory";
+import AddCategory from "../components/categories/AddCategory";
+import ViewCategory from "../components/categories/ViewCategory";
+import ListCategory from "../components/categories/ListCategory";
+import AddSubCategory from "../components/categories/AddSubCategory";
+import ListSubCategory from "../components/categories/ListSubCategory";
 
 const Categorys = ({ token }) => {
   const { categoryId } = useParams();
@@ -49,7 +49,7 @@ const Categorys = ({ token }) => {
     searchParams.get("isActive") || ""
   );
   const [searchDeleted, setSearchDeleted] = useState(
-    searchParams.get("includeDeleted") || "false"
+    searchParams.get("includeDeleted") || ""
   );
 
   // Fetch categories
@@ -121,8 +121,10 @@ const Categorys = ({ token }) => {
         };
 
         fetchCategoryDetails();
-      } else {
+      } else if (location.pathname.includes("/view/")) {
         setActiveTab("category");
+      } else {
+        setActiveTab("add");
       }
 
       setHasInitializedFromUrl(true);
@@ -165,7 +167,7 @@ const Categorys = ({ token }) => {
       setImages(cat.images || []);
       setMainImage(cat.mainImage || null);
 
-      navigate(`/category/edit/${cat.id}`); // صفحة تعديل
+      // Stay on the collections page and switch to the Add (edit) tab
       setActiveTab("add");
     } else {
       // 🔴 وضع الإضافة (تفريغ الحقول)
@@ -178,14 +180,80 @@ const Categorys = ({ token }) => {
       setImages([]);
       setMainImage(null);
 
-      navigate(`/collections`); // صفحة إضافة جديدة
       setActiveTab("add");
     }
+  };
+
+  // ✅ Handle View Category
+  const handleViewCategory = (cat) => {
+    setSearchId(cat.id);
+    setSearchActive(cat.isActive ? "true" : "false");
+    setSearchDeleted(cat.isDeleted ? "true" : "false");
+    setActiveTab("category");
+    // Reflect current status in URL
+    navigate(`/category/view/${cat.id}?isActive=${cat.isActive ? "true" : "false"}&includeDeleted=${cat.isDeleted ? "true" : "false"}`);
+  };
+
+  // ✅ When a subcategory is selected in ViewCategory, go to subcategory details page
+  const handleSelectIdFromView = (id) => {
+    navigate(`/subcategories/${id}`);
+  };
+
+  // ✅ Handle View SubCategory → navigate to dedicated details route
+  const handleViewSubCategory = (subCat) => {
+    navigate(`/subcategories/${subCat.id}`);
   };
 
   return (
     <div className="container mx-auto p-4">
       <h1 className="text-2xl font-bold mb-6">Category Management</h1>
+
+      {/* Quick navigation to dedicated details pages */}
+      <div className="flex flex-col md:flex-row gap-3 mb-4">
+        <div className="flex items-center gap-2">
+          <input
+            type="number"
+            placeholder="Category ID"
+            value={searchId}
+            onChange={(e) => setSearchId(e.target.value)}
+            className="border px-3 py-2 rounded w-44"
+          />
+          <button
+            onClick={() => {
+              if (!searchId) return toast.error("Enter category ID");
+              navigate(`/category/view/${searchId}`);
+            }}
+            className="px-3 py-2 bg-blue-600 text-white rounded"
+          >
+            Open Category Details Page
+          </button>
+        </div>
+        <div className="flex items-center gap-2">
+          <input
+            type="number"
+            placeholder="SubCategory ID"
+            onKeyDown={(e) => {
+              if (e.key === 'Enter') {
+                const val = e.currentTarget.value;
+                if (!val) return toast.error("Enter subcategory ID");
+                navigate(`/subcategories/${val}`);
+              }
+            }}
+            className="border px-3 py-2 rounded w-44"
+          />
+          <button
+            onClick={(e) => {
+              const input = (e.currentTarget.previousElementSibling);
+              const val = input && 'value' in input ? input.value : '';
+              if (!val) return toast.error("Enter subcategory ID");
+              navigate(`/subcategories/${val}`);
+            }}
+            className="px-3 py-2 bg-purple-600 text-white rounded"
+          >
+            Open SubCategory Details Page
+          </button>
+        </div>
+      </div>
 
       {/* Tab Navigation */}
       <div className="flex flex-wrap gap-2 mb-6">
@@ -261,6 +329,7 @@ const Categorys = ({ token }) => {
           setCategories={setCategories}
           setActiveTab={setActiveTab}
           handleEditCategory={handleEditCategory}
+          handleViewCategory={handleViewCategory}
           setParentCategoryId={setParentCategoryId}
           fetchCategories={fetchCategories}
         />
@@ -296,6 +365,7 @@ const Categorys = ({ token }) => {
           categories={categories}
           setActiveTab={setActiveTab}
           handleEditSubCategory={handleEditSubCategory}
+          handleViewSubCategory={handleViewSubCategory}
         />
       )}
 
@@ -325,8 +395,9 @@ const Categorys = ({ token }) => {
               onChange={(e) => setSearchDeleted(e.target.value)}
               className="border px-3 py-2 rounded"
             >
-              <option value="false">Exclude Deleted</option>
+              <option value="">All Deleted Status</option>
               <option value="true">Include Deleted</option>
+              <option value="false">Exclude Deleted</option>
             </select>
           </div>
           <ViewCategory
@@ -337,9 +408,17 @@ const Categorys = ({ token }) => {
                 ? true
                 : searchActive === "false"
                   ? false
-                  : undefined
+                  : null
             }
-            includeDeleted={searchDeleted === "true"}
+            includeDeleted={
+              searchDeleted === "true"
+                ? true
+                : searchDeleted === "false"
+                  ? false
+                  : null
+            }
+            onUpdateCategory={handleEditCategory}
+            onSelectId={handleSelectIdFromView}
           />
         </div>
       )}

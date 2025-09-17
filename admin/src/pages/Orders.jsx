@@ -7,11 +7,11 @@ import API from "../services/api";
 import { useNavigate } from "react-router-dom";
 
 // Import components
-import OrderTable from "../components/OrderTable";
-import OrderFilters from "../components/OrderFilters";
-import AddOrderForm from "../components/AddOrderForm";
-import ViewOrderModal from "../components/ViewOrderModal";
-import Pagination from "../components/Pagination";
+import OrderTable from "../components/orders/OrderTable";
+import OrderFilters from "../components/orders/OrderFilters";
+import AddOrderForm from "../components/orders/AddOrderForm";
+import ViewOrderModal from "../components/modals/ViewOrderModal";
+import Pagination from "../components/layout/Pagination";
 
 const Orders = ({ token }) => {
   const navigate = useNavigate();
@@ -48,6 +48,28 @@ const Orders = ({ token }) => {
       ...newOrder,
       [name]: name === "addressId" ? parseInt(value) : value,
     });
+  };
+
+  // Status mapping helpers: ensure we can compare consistently even if API sends strings
+  const STATUS_LABELS = {
+    0: 'Pending',
+    1: 'Processing',
+    2: 'Shipped',
+    3: 'Out for Delivery',
+    4: 'Delivered',
+    5: 'Cancelled',
+    6: 'Returned',
+    7: 'Refunded',
+    8: 'On Hold',
+    9: 'Failed',
+    10: 'Draft',
+  };
+
+  const labelToCode = (val) => {
+    if (Number.isFinite(val)) return val;
+    const s = String(val || '').trim().toLowerCase();
+    const match = Object.entries(STATUS_LABELS).find(([, label]) => label.toLowerCase() === s);
+    return match ? Number(match[0]) : undefined;
   };
 
   // Handle product selection
@@ -735,9 +757,15 @@ const Orders = ({ token }) => {
       });
     }
 
-    // Apply status filter
-    if (statusFilter) {
-      filtered = filtered.filter((order) => order.status === statusFilter);
+    // Apply status filter (normalize to numeric code)
+    if (statusFilter !== "") {
+      const wanted = Number(statusFilter);
+      filtered = filtered.filter((order) => {
+        const s = order.status;
+        if (Number.isFinite(s)) return Number(s) === wanted;
+        const code = labelToCode(s);
+        return Number.isFinite(code) ? Number(code) === wanted : false;
+      });
     }
 
     // Apply sorting

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { toast } from "react-toastify";
 import API from "../services/api";
-import ProductDiscountManager from "../components/product/ProductDiscountManager";
+import ProductDiscountManager from "../components/products/ProductDiscountManager";
 
 const ProductDiscountPage = ({ token }) => {
   const [products, setProducts] = useState([]);

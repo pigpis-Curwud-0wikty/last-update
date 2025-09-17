@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from "react";
 import { toast } from "react-toastify";
 import API from "../services/api";
-import DiscountForm from "../components/discount/DiscountForm";
-import DiscountList from "../components/discount/DiscountList";
-import DiscountFilter from "../components/discount/DiscountFilter";
+import DiscountForm from "../components/discounts/DiscountForm";
+import DiscountList from "../components/discounts/DiscountList";
+import DiscountFilter from "../components/discounts/DiscountFilter";
 
 const DiscountManager = ({ token }) => {
   // State for discount form

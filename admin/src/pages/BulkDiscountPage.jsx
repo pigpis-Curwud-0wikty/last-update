@@ -1,5 +1,5 @@
 import React from "react";
-import BulkDiscountManager from "../components/product/BulkDiscountManager";
+import BulkDiscountManager from "../components/products/BulkDiscountManager";
 
 const BulkDiscountPage = ({ token }) => {
   return (

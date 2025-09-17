@@ -8,6 +8,20 @@ const OrderFilters = ({
   sortBy, 
   handleSortChange 
 }) => {
+  const STATUS_LABELS = {
+    0: 'Pending',
+    1: 'Processing',
+    2: 'Shipped',
+    3: 'Out for Delivery',
+    4: 'Delivered',
+    5: 'Cancelled',
+    6: 'Returned',
+    7: 'Refunded',
+    8: 'On Hold',
+    9: 'Failed',
+    10: 'Draft',
+  };
+
   return (
     <div className="mb-6 bg-white p-4 rounded-lg shadow-sm">
       <h2 className="text-lg font-medium mb-4">Filters</h2>
@@ -53,13 +67,9 @@ const OrderFilters = ({
             className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-300 focus:border-blue-300 transition-all"
           >
             <option value="">All Statuses</option>
-            <option value="Pending">Pending</option>
-            <option value="Processing">Processing</option>
-            <option value="Shipped">Shipped</option>
-            <option value="OutForDelivery">Out for Delivery</option>
-            <option value="Delivered">Delivered</option>
-            <option value="Cancelled">Cancelled</option>
-            <option value="Returned">Returned</option>
+            {Object.entries(STATUS_LABELS).map(([code, label]) => (
+              <option key={code} value={code}>{label}</option>
+            ))}
           </select>
         </div>
 

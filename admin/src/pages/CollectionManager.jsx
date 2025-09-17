@@ -5,9 +5,9 @@ import { backendUrl } from "../App";
 import { useParams, useLocation, useNavigate } from "react-router-dom";
 
 // Import components
-import AddCollection from "../components/collection/AddCollection";
-import ViewCollection from "../components/collection/ViewCollection";
-import ListCollection from "../components/collection/ListCollection";
+import AddCollection from "../components/collections/AddCollection";
+import ViewCollection from "../components/collections/ViewCollection";
+import ListCollection from "../components/collections/ListCollection";
 
 const CollectionManager = ({ token }) => {
   const { collectionId } = useParams();

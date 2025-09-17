@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { toast } from "react-toastify";
 import { useNavigate } from "react-router-dom";
 import API from "../services/api";
-import ProductSearchForm from "../components/form/ProductSearchForm";
+import ProductSearchForm from "../components/forms/ProductSearchForm";
 
 const ProductList = ({ token }) => {
   const navigate = useNavigate();
@@ -750,6 +750,14 @@ const ProductList = ({ token }) => {
                               className="px-3 py-1 bg-orange-100 text-orange-800 rounded text-xs"
                             >
                               Update
+                            </button>
+                            <button
+                              onClick={() =>
+                                navigate(`/products/${product.id}`)
+                              }
+                              className="px-3 py-1 bg-gray-100 text-gray-800 rounded text-xs"
+                            >
+                              View
                             </button>
                             <button
                               onClick={() =>

@@ -11,6 +11,7 @@ const ListCategory = ({
   setActiveTab,
   setParentCategoryId,
   handleEditCategory,
+  handleViewCategory,
 }) => {
   const navigate = useNavigate();
   const [search, setSearch] = useState("");
@@ -69,7 +70,7 @@ const ListCategory = ({
     try {
       setDeleteLoading(true); // Start loading
 
-      await axios.delete(`${backendUrl}/api/categories/${id}`, {
+      const res = await axios.delete(`${backendUrl}/api/categories/${id}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
 
@@ -80,18 +81,28 @@ const ListCategory = ({
         )
       );
 
-      toast.success("Category deleted successfully");
+      const okMsg =
+        res?.data?.responseBody?.message ||
+        res?.data?.message ||
+        (typeof res?.data === "string" ? res.data : null) ||
+        "Category deleted successfully";
+      toast.success(okMsg);
     } catch (error) {
       const errData = error.response?.data;
+      const apiMsg =
+        errData?.responseBody?.message ||
+        errData?.message ||
+        error.message ||
+        "Failed to delete category";
       if (errData?.responseBody?.message?.includes("already deleted")) {
         setCategories((prev) =>
           prev.map((cat) =>
             cat.id === id ? { ...cat, isDeleted: true, wasDeleted: true } : cat
           )
         );
-        toast.info("Category was already deleted");
+        toast.info(apiMsg);
       } else {
-        toast.error("Failed to delete category");
+        toast.error(apiMsg);
       }
     } finally {
       setDeleteLoading(false); // ✅ Reset loading
@@ -103,22 +114,30 @@ const ListCategory = ({
   const activateCategory = async (cat) => {
     if (!cat.mainImage) return toast.error("Upload a main image first!");
     try {
-      await axios.patch(
+      const res = await axios.patch(
         `${backendUrl}/api/categories/${cat.id}/activate`,
         {},
         { headers: { Authorization: `Bearer ${token}` } }
       );
-      toast.success("Category activated ✅");
+      const msg =
+        res?.data?.responseBody?.message ||
+        res?.data?.message ||
+        "Category activated ✅";
+      toast.success(msg);
       fetchCategories(); // ⬅️ هنا نعمل refresh من السيرفر
     } catch (err) {
       console.error("Activation failed:", err.response?.data || err);
-      toast.error(err.response?.data?.message || "Activation failed");
+      const emsg =
+        err.response?.data?.responseBody?.message ||
+        err.response?.data?.message ||
+        "Activation failed";
+      toast.error(emsg);
     }
   };
 
   const deactivateCategory = async (id) => {
     try {
-      await axios.patch(
+      const res = await axios.patch(
         `${backendUrl}/api/categories/${id}/deactivate`,
         {},
         {
@@ -126,24 +145,37 @@ const ListCategory = ({
           params: { isActive: false }, // ✨ مهم
         }
       );
-      toast.success("Category deactivated ❌");
+      const msg =
+        res?.data?.responseBody?.message ||
+        res?.data?.message ||
+        "Category deactivated ❌";
+      toast.success(msg);
       fetchCategories();
     } catch (err) {
       console.error("Deactivation failed:", err.response?.data || err);
-      toast.error(err.response?.data?.message || "Deactivation failed");
+      const emsg =
+        err?.response?.data?.responseBody?.message ||
+        err?.response?.data?.message ||
+        err?.message ||
+        "Deactivation failed";
+      toast.error(emsg);
     }
   };
 
   const restoreCategory = async (id) => {
     try {
-      await axios.patch(
+      const res = await axios.patch(
         `${backendUrl}/api/categories/${id}/restore`,
         {},
         {
           headers: { Authorization: `Bearer ${token}` },
         }
       );
-      toast.success("Category restored ✅");
+      const msg =
+        res?.data?.responseBody?.message ||
+        res?.data?.message ||
+        "Category restored ✅";
+      toast.success(msg);
 
       // Update the category locally to keep track that it was once deleted
       setCategories((prev) =>
@@ -153,7 +185,11 @@ const ListCategory = ({
       );
     } catch (err) {
       console.error("Restore failed:", err);
-      toast.error("Restore failed");
+      const emsg =
+        err.response?.data?.responseBody?.message ||
+        err.response?.data?.message ||
+        "Restore failed";
+      toast.error(emsg);
     }
   };
 
@@ -214,12 +250,7 @@ const ListCategory = ({
           categories.map((cat) => (
             <div
               key={cat.id}
-              className="border p-4 rounded-lg shadow-sm hover:shadow-md transition bg-white cursor-pointer"
-              onClick={() => {
-                navigate(
-                  `/category/view/${cat.id}?isActive=${cat.isActive ? "true" : "false"}&includeDeleted=${cat.isDeleted ? "true" : "false"}`
-                );
-              }}
+              className="border p-4 rounded-lg shadow-sm hover:shadow-md transition bg-white"
             >
               {cat.mainImage ? (
                 <img
@@ -330,9 +361,7 @@ const ListCategory = ({
                 <button
                   onClick={(e) => {
                     e.stopPropagation();
-                    navigate(
-                      `/category/view/${cat.id}?isActive=${cat.isActive ? "true" : "false"}&includeDeleted=${cat.isDeleted ? "true" : "false"}`
-                    );
+                    handleViewCategory(cat);
                   }}
                   className="bg-purple-500 text-white px-3 py-1 rounded"
                 >

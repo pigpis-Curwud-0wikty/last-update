@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { toast } from "react-toastify";
 import { useNavigate, useLocation } from "react-router-dom";
 import API from "../services/api";
-import ProductForm from "../components/form/ProductForm";
+import ProductForm from "../components/forms/ProductForm";
 
 const Add = ({ token }) => {
   const navigate = useNavigate();

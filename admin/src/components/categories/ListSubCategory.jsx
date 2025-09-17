@@ -9,6 +9,7 @@ const ListSubCategory = ({
   categories,
   setActiveTab,
   handleEditSubCategory,
+  handleViewSubCategory,
 }) => {
   const [search, setSearch] = useState("");
   const [isActive, setIsActive] = useState(""); // "", "true", "false"
@@ -130,18 +131,28 @@ const ListSubCategory = ({
         prev.map((sc) => (sc.id === id ? { ...sc, deleted: true } : sc))
       );
 
-      toast.success("Sub-category deleted successfully");
+      const okMsg =
+        res?.data?.responseBody?.message ||
+        res?.data?.message ||
+        (typeof res?.data === "string" ? res.data : null) ||
+        "Sub-category deleted successfully";
+      toast.success(okMsg);
     } catch (error) {
       const errData = error.response?.data;
+      const apiMsg =
+        errData?.responseBody?.message ||
+        errData?.message ||
+        error.message ||
+        "Failed to delete sub-category";
 
       if (errData?.responseBody?.message?.includes("already deleted")) {
         // ✅ علّم برضه إنه متشال
         setSubCategories((prev) =>
           prev.map((sc) => (sc.id === id ? { ...sc, deleted: true } : sc))
         );
-        toast.info("Sub-category was already deleted");
+        toast.info(apiMsg);
       } else {
-        toast.error("Failed to delete sub-category");
+        toast.error(apiMsg);
       }
     }
   };
@@ -162,8 +173,11 @@ const ListSubCategory = ({
         }
       );
 
-      console.log("✅ Activation Response:", res.data);
-      toast.success("Sub-category activated ✅");
+      const msg =
+        res?.data?.responseBody?.message ||
+        res?.data?.message ||
+        "Sub-category activated ✅";
+      toast.success(msg);
       fetchSubCategories();
     } catch (err) {
       if (err.response) {
@@ -189,27 +203,40 @@ const ListSubCategory = ({
   // ✅ Deactivate SubCategory
   const deactivateSubCategory = async (id) => {
     try {
-      await axios.patch(
+      const res = await axios.patch(
         `${backendUrl}/api/subcategories/${id}/deactivate`,
         {},
         { headers: { Authorization: `Bearer ${token}` } }
       );
-      toast.success("Sub-category deactivated ❌");
+      const msg =
+        res?.data?.responseBody?.message ||
+        res?.data?.message ||
+        "Sub-category deactivated ❌";
+      toast.success(msg);
       fetchSubCategories();
-    } catch {
-      toast.error("Deactivation failed");
+    } catch (err) {
+      const emsg =
+        err?.response?.data?.responseBody?.message ||
+        err?.response?.data?.message ||
+        err?.message ||
+        "Deactivation failed";
+      toast.error(emsg);
     }
   };
 
   // ✅ Restore Deleted SubCategory
   const restoreSubCategory = async (id) => {
     try {
-      await axios.patch(
+      const res = await axios.patch(
         `${backendUrl}/api/subcategories/${id}/restore`,
         {},
         { headers: { Authorization: `Bearer ${token}` } }
       );
-      toast.success("Sub-category restored ✅");
+      const msg =
+        res?.data?.responseBody?.message ||
+        res?.data?.message ||
+        "Sub-category restored ✅";
+      toast.success(msg);
       fetchSubCategories();
     } catch {
       toast.error("Restore failed");
@@ -279,14 +306,7 @@ const ListSubCategory = ({
           subcategories.map((subCat) => (
             <div
               key={subCat.id}
-              className="border p-4 rounded-lg shadow-sm hover:shadow-md transition bg-white cursor-pointer"
-              onClick={() =>
-                navigate(
-                  `/subcategory/view/${subCat.id}?isActive=${
-                    subCat.isActive ? "true" : "false"
-                  }&includeDeleted=${subCat.deleted ? "true" : "false"}`
-                )
-              }
+              className="border p-4 rounded-lg shadow-sm hover:shadow-md transition bg-white"
             >
               {/* ✅ Show Image */}
               {subCat.mainImageUrl ? (
@@ -327,6 +347,15 @@ const ListSubCategory = ({
 
               {/* ✅ Actions */}
               <div className="flex flex-wrap gap-2">
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleViewSubCategory(subCat);
+                  }}
+                  className="bg-purple-500 text-white px-3 py-1 rounded"
+                >
+                  View
+                </button>
                 <button
                   onClick={(e) => {
                     e.stopPropagation();

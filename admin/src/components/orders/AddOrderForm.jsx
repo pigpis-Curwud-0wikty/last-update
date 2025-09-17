@@ -1,5 +1,5 @@
 import React from 'react';
-import { currency } from '../App';
+import { currency } from '../../App';
 import { toast } from 'react-toastify';
 
 const AddOrderForm = ({

@@ -1,15 +1,17 @@
 import React from "react";
 import { NavLink } from "react-router-dom";
-import { assets } from "../assets/assets";
+import { assets } from "../../assets/assets";
 
 const Sidebar = () => {
   return (
-    <div className="w-[18%] min-h-screen border-r-2 border-gray-200">
-      <div className="flex flex-col gap-4 pt-6 pl-[20%] text-[15px]">
+    <div className="w-[18%] min-h-screen border-r-2 border-gray-200 sticky top-14">
+      <div className="flex flex-col gap-2 pt-4 pl-[14%] pr-2 text-[15px]">
         <NavLink
           to="/"
-          className={
-            "flex items-center gap-3 border border-gray-300 border-r-0 px-3 py-2 rounded-l-lg"
+          className={({ isActive }) =>
+            `flex items-center gap-3 px-3 py-2 rounded-lg transition-colors border border-transparent hover:bg-gray-100 ${
+              isActive ? "bg-gray-100 text-gray-900 border-gray-300" : "text-gray-700"
+            }`
           }
         >
           <img
@@ -21,8 +23,10 @@ const Sidebar = () => {
         </NavLink>
         <NavLink
           to="/add"
-          className={
-            "flex items-center gap-3 border border-gray-300 border-r-0 px-3 py-2 rounded-l-lg"
+          className={({ isActive }) =>
+            `flex items-center gap-3 px-3 py-2 rounded-lg transition-colors border border-transparent hover:bg-gray-100 ${
+              isActive ? "bg-gray-100 text-gray-900 border-gray-300" : "text-gray-700"
+            }`
           }
         >
           <img
@@ -34,8 +38,10 @@ const Sidebar = () => {
         </NavLink>
         <NavLink
           to="/products"
-          className={
-            "flex items-center gap-3 border border-gray-300 border-r-0 px-3 py-2 rounded-l-lg"
+          className={({ isActive }) =>
+            `flex items-center gap-3 px-3 py-2 rounded-lg transition-colors border border-transparent hover:bg-gray-100 ${
+              isActive ? "bg-gray-100 text-gray-900 border-gray-300" : "text-gray-700"
+            }`
           }
         >
           <img
@@ -47,8 +53,10 @@ const Sidebar = () => {
         </NavLink>
         <NavLink
           to="/discounts"
-          className={
-            "flex items-center gap-3 border border-gray-300 border-r-0 px-3 py-2 rounded-l-lg"
+          className={({ isActive }) =>
+            `flex items-center gap-3 px-3 py-2 rounded-lg transition-colors border border-transparent hover:bg-gray-100 ${
+              isActive ? "bg-gray-100 text-gray-900 border-gray-300" : "text-gray-700"
+            }`
           }
         >
           <img
@@ -61,8 +69,10 @@ const Sidebar = () => {
         
         <NavLink
           to="/bulk-discount"
-          className={
-            "flex items-center gap-3 border border-gray-300 border-r-0 px-3 py-2 rounded-l-lg"
+          className={({ isActive }) =>
+            `flex items-center gap-3 px-3 py-2 rounded-lg transition-colors border border-transparent hover:bg-gray-100 ${
+              isActive ? "bg-gray-100 text-gray-900 border-gray-300" : "text-gray-700"
+            }`
           }
         >
           <img
@@ -75,8 +85,10 @@ const Sidebar = () => {
 
         <NavLink
           to="/collections"
-          className={
-            "flex items-center gap-3 border border-gray-300 border-r-0 px-3 py-2 rounded-l-lg"
+          className={({ isActive }) =>
+            `flex items-center gap-3 px-3 py-2 rounded-lg transition-colors border border-transparent hover:bg-gray-100 ${
+              isActive ? "bg-gray-100 text-gray-900 border-gray-300" : "text-gray-700"
+            }`
           }
         >
           <img
@@ -89,8 +101,10 @@ const Sidebar = () => {
 
         <NavLink
           to="/collection-manager"
-          className={
-            "flex items-center gap-3 border border-gray-300 border-r-0 px-3 py-2 rounded-l-lg"
+          className={({ isActive }) =>
+            `flex items-center gap-3 px-3 py-2 rounded-lg transition-colors border border-transparent hover:bg-gray-100 ${
+              isActive ? "bg-gray-100 text-gray-900 border-gray-300" : "text-gray-700"
+            }`
           }
         >
           <img
@@ -103,8 +117,10 @@ const Sidebar = () => {
 
         <NavLink
           to="/orders"
-          className={
-            "flex items-center gap-3 border border-gray-300 border-r-0 px-3 py-2 rounded-l-lg"
+          className={({ isActive }) =>
+            `flex items-center gap-3 px-3 py-2 rounded-lg transition-colors border border-transparent hover:bg-gray-100 ${
+              isActive ? "bg-gray-100 text-gray-900 border-gray-300" : "text-gray-700"
+            }`
           }
         >
           <img
@@ -116,8 +132,10 @@ const Sidebar = () => {
         </NavLink>
         <NavLink
           to="/users"
-          className={
-            "flex items-center gap-3 border border-gray-300 border-r-0 px-3 py-2 rounded-l-lg"
+          className={({ isActive }) =>
+            `flex items-center gap-3 px-3 py-2 rounded-lg transition-colors border border-transparent hover:bg-gray-100 ${
+              isActive ? "bg-gray-100 text-gray-900 border-gray-300" : "text-gray-700"
+            }`
           }
         >
           <img
@@ -129,8 +147,10 @@ const Sidebar = () => {
         </NavLink>
         <NavLink
           to="/settings"
-          className={
-            "flex items-center gap-3 border border-gray-300 border-r-0 px-3 py-2 rounded-l-lg"
+          className={({ isActive }) =>
+            `flex items-center gap-3 px-3 py-2 rounded-lg transition-colors border border-transparent hover:bg-gray-100 ${
+              isActive ? "bg-gray-100 text-gray-900 border-gray-300" : "text-gray-700"
+            }`
           }
         >
           <img

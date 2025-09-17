@@ -1,6 +1,6 @@
 import React from 'react';
-import { assets } from '../assets/assets';
-import { currency } from '../App';
+import { assets } from '../../assets/assets';
+import { currency } from '../../App';
 
 const OrderTable = ({ 
   currentOrders, 
@@ -8,6 +8,41 @@ const OrderTable = ({
   handleViewOrder, 
   statusHandler 
 }) => {
+  const STATUS_LABELS = {
+    0: 'Pending',
+    1: 'Processing',
+    2: 'Shipped',
+    3: 'Out for Delivery',
+    4: 'Delivered',
+    5: 'Cancelled',
+    6: 'Returned',
+    7: 'Refunded',
+    8: 'On Hold',
+    9: 'Failed',
+    10: 'Draft',
+  };
+
+  const getStatusLabel = (val) => {
+    const num = Number(val);
+    if (Number.isFinite(num) && STATUS_LABELS.hasOwnProperty(num)) return STATUS_LABELS[num];
+    // If backend sends string labels sometimes, pass through
+    if (typeof val === 'string' && val.trim()) return val;
+    return 'Pending';
+  };
+
+  const statusBadgeClass = (label) => {
+    const l = String(label).toLowerCase();
+    if (l.includes('cancel')) return 'bg-red-100 text-red-700';
+    if (l.includes('return')) return 'bg-orange-100 text-orange-700';
+    if (l.includes('deliver')) return 'bg-green-100 text-green-700';
+    if (l.includes('ship')) return 'bg-blue-100 text-blue-700';
+    if (l.includes('process')) return 'bg-indigo-100 text-indigo-700';
+    if (l.includes('hold')) return 'bg-yellow-100 text-yellow-700';
+    if (l.includes('refund')) return 'bg-emerald-100 text-emerald-700';
+    if (l.includes('fail')) return 'bg-rose-100 text-rose-700';
+    return 'bg-gray-100 text-gray-700';
+  };
+
   return (
     <div className="overflow-x-auto">
       <table className="min-w-full divide-y divide-gray-200">
@@ -108,19 +143,15 @@ const OrderTable = ({
                       value={Number(status) || 0}
                       onChange={(e) => statusHandler(orderId, e)}
                     >
-                      <option value={0}>0</option>
-                      <option value={1}>1</option>
-                      <option value={2}>2</option>
-                      <option value={3}>3</option>
-                      <option value={4}>4</option>
-                      <option value={5}>5</option>
-                      <option value={6}>6</option>
-                      <option value={7}>7</option>
-                      <option value={8}>8</option>
-                      <option value={9}>9</option>
-                      <option value={10}>10</option>
+                      {Object.entries(STATUS_LABELS).map(([code, label]) => (
+                        <option key={code} value={code}>{label}</option>
+                      ))}
                     </select>
-                    <span className="text-xs text-gray-600">Code: {Number(status) || 0}</span>
+                    <span
+                      className={`text-xs px-2 py-0.5 rounded-full ${statusBadgeClass(getStatusLabel(status))}`}
+                    >
+                      {getStatusLabel(status)}
+                    </span>
                   </div>
                 </td>
                 <td className="py-3 px-4">
