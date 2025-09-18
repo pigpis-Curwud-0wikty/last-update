@@ -16,7 +16,6 @@ const CollectionManager = ({ token }) => {
   const searchParams = new URLSearchParams(location.search);
 
   const [activeTab, setActiveTab] = useState("add");
-  const [hasInitializedFromUrl, setHasInitializedFromUrl] = useState(false);
   const [collections, setCollections] = useState([]);
 
   // form states for collection
@@ -66,51 +65,47 @@ const CollectionManager = ({ token }) => {
     }
   }, [token]);
 
-  // Update search states when URL parameters change
+  // Update state when URL parameters change (respond every time, not just once)
   useEffect(() => {
-    if (collectionId && !hasInitializedFromUrl) {
-      setSearchId(collectionId);
+    if (!collectionId) return;
+    setSearchId(collectionId);
 
-      // Check if we're on the edit page
-      if (location.pathname.includes("/edit/")) {
-        // Set edit mode
-        setEditMode(true);
-        setEditCollectionId(Number(collectionId));
-        setActiveTab("add");
+    if (location.pathname.includes("/edit/")) {
+      // Set edit mode
+      setEditMode(true);
+      setEditCollectionId(Number(collectionId));
+      setActiveTab("add");
 
-        // Fetch collection details for editing
-        const fetchCollectionDetails = async () => {
-          try {
-            const res = await axios.get(
-              `${backendUrl}/api/Collection/${collectionId}`,
-              {
-                headers: { Authorization: `Bearer ${token}` },
-              }
-            );
-
-            const col = res.data?.responseBody?.data || {};
-            setName(col.name || "");
-            setDescription(col.description || "");
-            setDisplayOrder(col.displayOrder || 1);
-
-            if (col.images?.length > 0) {
-              setImages(col.images.filter((img) => !img.isMain));
-              setMainImage(col.images.find((img) => img.isMain));
+      // Fetch collection details for editing
+      const fetchCollectionDetails = async () => {
+        try {
+          const res = await axios.get(
+            `${backendUrl}/api/Collection/${collectionId}`,
+            {
+              headers: { Authorization: `Bearer ${token}` },
             }
-          } catch (error) {
-            console.error("Error fetching collection details:", error);
-            toast.error("Error fetching collection details");
+          );
+
+          const col = res.data?.responseBody?.data || {};
+          setName(col.name || "");
+          setDescription(col.description || "");
+          setDisplayOrder(col.displayOrder || 1);
+
+          if (col.images?.length > 0) {
+            setImages(col.images.filter((img) => !img.isMain));
+            setMainImage(col.images.find((img) => img.isMain));
           }
-        };
+        } catch (error) {
+          console.error("Error fetching collection details:", error);
+          toast.error("Error fetching collection details");
+        }
+      };
 
-        fetchCollectionDetails();
-      } else if (location.pathname.includes("/view/")) {
-        setActiveTab("view");
-      }
-
-      setHasInitializedFromUrl(true);
+      fetchCollectionDetails();
+    } else if (location.pathname.includes("/view/")) {
+      setActiveTab("view");
     }
-  }, [collectionId, location.pathname, token, hasInitializedFromUrl]);
+  }, [collectionId, location.pathname, token]);
 
   // Handle edit collection
   const handleEditCollection = (id) => {

@@ -201,9 +201,16 @@ const ViewSubCategory = ({ token, subCategoryId, isActive = null, includeDeleted
     if (!window.confirm("Delete main image?")) return;
     try {
       setActionLoading(true);
+      const mainImg = Array.isArray(subCategory.images)
+        ? subCategory.images.find((img) => img && img.isMain)
+        : null;
+      if (!mainImg || !mainImg.id) {
+        toast.error("No main image found to delete");
+        return;
+      }
       const res = await axios.delete(
-        `${backendUrl}/api/subcategories/${subCategory.id}/images/main`,
-        { headers: { Authorization: `Bearer ${token}` } }
+        `${backendUrl}/api/subcategories/${subCategory.id}/images/${mainImg.id}`,
+        { headers: { Authorization: `Bearer ${token}`, Accept: 'text/plain' } }
       );
       const msg =
         res?.data?.responseBody?.message ||
@@ -231,7 +238,7 @@ const ViewSubCategory = ({ token, subCategoryId, isActive = null, includeDeleted
       setActionLoading(true);
       const res = await axios.delete(
         `${backendUrl}/api/subcategories/${subCategory.id}/images/${imageId}`,
-        { headers: { Authorization: `Bearer ${token}` } }
+        { headers: { Authorization: `Bearer ${token}`, Accept: 'text/plain' } }
       );
       const msg =
         res?.data?.responseBody?.message ||

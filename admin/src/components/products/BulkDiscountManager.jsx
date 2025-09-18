@@ -157,8 +157,48 @@ const BulkDiscountManager = ({ token }) => {
                       />
                     )}
                     <div>
-                      <p className="font-medium">{product.name}</p>
-                      <p className="text-sm text-gray-600">${product.price}</p>
+                      <div className="flex items-center gap-2">
+                        <p className="font-medium">{product.name}</p>
+                        {(() => {
+                          const dp = Number(
+                            (product.discount && (product.discount.discountPercent ?? product.discount.percentage)) ??
+                              product.discountPercentage ??
+                              product.discountPrecentage ??
+                              0
+                          );
+                          return !Number.isNaN(dp) && dp > 0 ? (
+                            <span className="px-2 py-0.5 text-xs rounded-full bg-purple-100 text-purple-700">{dp}% OFF</span>
+                          ) : null;
+                        })()}
+                      </div>
+                      {(() => {
+                        const dp = Number(
+                          (product.discount && (product.discount.discountPercent ?? product.discount.percentage)) ??
+                            product.discountPercentage ??
+                            product.discountPrecentage ??
+                            0
+                        );
+                        const hasDiscount = !Number.isNaN(dp) && dp > 0;
+                        const basePrice = Number(product.price || 0);
+                        const serverFinal = product.finalPrice != null ? Number(product.finalPrice) : null;
+                        const finalPrice = hasDiscount
+                          ? (serverFinal != null && !Number.isNaN(serverFinal)
+                              ? serverFinal
+                              : basePrice * (dp > 0 ? (1 - dp / 100) : 1))
+                          : basePrice;
+                        return (
+                          <div className="text-sm text-gray-600">
+                            {hasDiscount ? (
+                              <div className="font-medium">
+                                <span className="line-through text-gray-500 mr-2">${basePrice.toFixed(2)}</span>
+                                <span className="text-green-700">${finalPrice.toFixed(2)}</span>
+                              </div>
+                            ) : (
+                              <span>${basePrice.toFixed(2)}</span>
+                            )}
+                          </div>
+                        );
+                      })()}
                     </div>
                   </div>
                 </label>

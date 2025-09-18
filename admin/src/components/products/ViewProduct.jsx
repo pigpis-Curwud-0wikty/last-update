@@ -1,6 +1,7 @@
 import React, { useEffect, useState, useCallback } from "react";
 import { toast } from "react-toastify";
 import API from "../../services/api";
+import { useNavigate } from "react-router-dom";
 
 const ViewProduct = ({ token, productId }) => {
   const [product, setProduct] = useState(null);
@@ -9,6 +10,7 @@ const ViewProduct = ({ token, productId }) => {
   const [error, setError] = useState(null);
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
   const [actionLoading, setActionLoading] = useState(false);
+  const navigate = useNavigate();
 
   const fetchProduct = useCallback(async () => {
     if (!productId) return;
@@ -114,6 +116,40 @@ const ViewProduct = ({ token, productId }) => {
     }
   };
 
+  // Toggle product active/inactive status
+  const toggleProductStatus = async () => {
+    if (!product) return;
+    try {
+      const hasImage =
+        (product.images && product.images.length > 0) || product.mainImage;
+
+      if (!hasImage && !product.isActive) {
+        toast.error("Cannot activate product without an image");
+        return;
+      }
+
+      setActionLoading(true);
+      if (product.isActive) {
+        await API.products.deactivate(product.id, token);
+        toast.success("Product deactivated successfully");
+      } else {
+        await API.products.activate(product.id, token);
+        toast.success("Product activated successfully");
+      }
+      await fetchProduct();
+    } catch (error) {
+      console.error("Error toggling product status:", error?.response || error);
+      toast.error(
+        error?.response?.data?.responseBody?.message ||
+          error?.response?.data?.message ||
+          error?.message ||
+          "Failed to toggle product status"
+      );
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
   if (!productId) return <div className="p-4">Enter product ID to view.</div>;
   if (loading && !product) return <div className="p-4">Loading...</div>;
   if (error) return <div className="p-4 text-red-600">{error}</div>;
@@ -121,12 +157,28 @@ const ViewProduct = ({ token, productId }) => {
 
   const images = product.images || [];
   const mainImage = images.find((img) => img.isMain) || images[0] || null;
+  const discountPercent = Number(
+    // Support multiple shapes: direct percentage or nested discount object
+    (product.discount && (product.discount.discountPercent ?? product.discount.percentage)) ??
+      product.discountPercentage ??
+      product.discountPrecentage ??
+      0
+  );
+  const hasDiscount = !Number.isNaN(discountPercent) && discountPercent > 0;
+  // Prefer server-provided finalPrice when available
+  const serverFinalPrice = product.finalPrice != null ? Number(product.finalPrice) : null;
+  const basePrice = Number(product.price);
+  const discountedPrice = hasDiscount
+    ? (serverFinalPrice != null && !Number.isNaN(serverFinalPrice)
+        ? serverFinalPrice
+        : basePrice * (1 - discountPercent / 100))
+    : basePrice;
 
   return (
     <div className="p-6 bg-white shadow-md rounded-lg">
       <div className="mb-6 flex flex-col md:flex-row md:items-center md:justify-between gap-3">
         <h2 className="text-2xl font-bold">Product: {product.name}</h2>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 flex-wrap">
           <span
             className={`px-2 py-1 text-xs rounded-full font-medium ${product.isActive ? "bg-green-100 text-green-700" : "bg-red-100 text-red-700"}`}
           >
@@ -136,6 +188,37 @@ const ViewProduct = ({ token, productId }) => {
             <span className="px-2 py-1 text-xs rounded-full font-medium bg-gray-200 text-gray-700">
               Deleted
             </span>
+          )}
+
+          {hasDiscount && (
+            <span className="px-2 py-1 text-xs rounded-full font-medium bg-purple-100 text-purple-700">
+              {discountPercent}% OFF
+            </span>
+          )}
+
+          {/* Action buttons */}
+          {!product.deletedAt && (
+            <div className="flex items-center gap-2 ml-2">
+              <button
+                type="button"
+                onClick={toggleProductStatus}
+                disabled={actionLoading}
+                className={`px-3 py-1 rounded text-xs ${
+                  product.isActive
+                    ? "bg-yellow-100 text-yellow-800"
+                    : "bg-green-100 text-green-800"
+                }`}
+              >
+                {product.isActive ? "Deactivate" : "Activate"}
+              </button>
+              <button
+                type="button"
+                onClick={() => navigate(`/add?edit=${product.id}`)}
+                className="px-3 py-1 bg-orange-100 text-orange-800 rounded text-xs"
+              >
+                Update
+              </button>
+            </div>
           )}
         </div>
       </div>
@@ -274,8 +357,44 @@ const ViewProduct = ({ token, productId }) => {
             </div>
             <div className="flex">
               <span className="font-semibold text-gray-700 w-24">Price:</span>
-              <span className="text-gray-900 font-bold text-lg">${product.price}</span>
+              {hasDiscount ? (
+                <span className="text-gray-900 font-bold text-lg">
+                  <span className="line-through text-gray-500 mr-2">${basePrice.toFixed(2)}</span>
+                  <span className="text-green-700">${discountedPrice.toFixed(2)}</span>
+                </span>
+              ) : (
+                <span className="text-gray-900 font-bold text-lg">${basePrice.toFixed(2)}</span>
+              )}
             </div>
+            {hasDiscount && (
+              <div className="flex">
+                <span className="font-semibold text-gray-700 w-24">Discount:</span>
+                <span className="text-purple-700 font-semibold">{discountPercent}%</span>
+              </div>
+            )}
+            {hasDiscount && product.discount && (
+              <div className="flex">
+                <span className="font-semibold text-gray-700 w-24">Offer:</span>
+                <span className="text-gray-900">
+                  {product.discount.name || "Discount"}
+                  {typeof product.discount.isActive === 'boolean' && (
+                    <span className={`ml-2 text-xs px-2 py-0.5 rounded-full ${product.discount.isActive ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
+                      {product.discount.isActive ? 'Active' : 'Inactive'}
+                    </span>
+                  )}
+                </span>
+              </div>
+            )}
+            {hasDiscount && product.discount && (product.discount.startDate || product.discount.endDate) && (
+              <div className="flex text-sm text-gray-600">
+                <span className="font-semibold text-gray-700 w-24">Validity:</span>
+                <span>
+                  {product.discount.startDate ? new Date(product.discount.startDate).toLocaleDateString() : '-'}
+                  {" "}to{" "}
+                  {product.discount.endDate ? new Date(product.discount.endDate).toLocaleDateString() : '-'}
+                </span>
+              </div>
+            )}
             {typeof product.availableQuantity !== "undefined" && (
               <div className="flex">
                 <span className="font-semibold text-gray-700 w-24">Stock:</span>

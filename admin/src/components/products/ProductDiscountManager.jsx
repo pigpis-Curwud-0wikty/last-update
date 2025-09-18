@@ -9,6 +9,30 @@ const ProductDiscountManager = ({ productId, token }) => {
   const [selectedDiscountId, setSelectedDiscountId] = useState(null);
   const [loading, setLoading] = useState(false);
 
+  // Helper: extract detailed API error messages
+  const extractApiErrors = (err, fallbackMessage) => {
+    const rb = err?.response?.data?.responseBody;
+    const msgs = [];
+    if (Array.isArray(rb?.errors?.messages) && rb.errors.messages.length) {
+      msgs.push(...rb.errors.messages);
+    }
+    const modelState = rb?.errors?.modelState || rb?.errors?.ModelState || rb?.errors?.details;
+    if (modelState && typeof modelState === "object") {
+      Object.values(modelState).forEach((v) => {
+        if (Array.isArray(v)) msgs.push(...v);
+        else if (typeof v === "string") msgs.push(v);
+      });
+    }
+    if (msgs.length) return msgs.join("\n");
+    return (
+      rb?.message ||
+      err?.response?.data?.message ||
+      err?.message ||
+      fallbackMessage ||
+      "Operation failed"
+    );
+  };
+
   // Fetch product details and discount info
   useEffect(() => {
     if (!productId) return;
@@ -28,15 +52,24 @@ const ProductDiscountManager = ({ productId, token }) => {
           // If 404, it means no discount is applied
           if (error.response && error.response.status === 404) {
             setDiscountInfo(null);
+          } else {
+            const msg = extractApiErrors(error, "Failed to load discount info");
+            toast.error(msg);
           }
         }
         
         // Get available discounts
-        const discountsResponse = await API.discounts.list({}, token);
-        setAvailableDiscounts(discountsResponse.responseBody?.data || []);
+        try {
+          const discountsResponse = await API.discounts.list({}, token);
+          setAvailableDiscounts(discountsResponse.responseBody?.data || []);
+        } catch (error) {
+          const msg = extractApiErrors(error, "Failed to load discounts list");
+          toast.error(msg);
+        }
       } catch (error) {
         console.error("Error fetching data:", error);
-        toast.error("Failed to load data");
+        const msg = extractApiErrors(error, "Failed to load data");
+        toast.error(msg);
       } finally {
         setLoading(false);
       }
@@ -62,7 +95,7 @@ const ProductDiscountManager = ({ productId, token }) => {
       setDiscountInfo(response.responseBody.data);
     } catch (error) {
       console.error("Error applying discount:", error);
-      const msg = error.response?.data?.responseBody?.message || error.response?.data?.message || error.message || "Failed to apply discount";
+      const msg = extractApiErrors(error, "Failed to apply discount");
       toast.error(msg);
     } finally {
       setLoading(false);
@@ -79,7 +112,7 @@ const ProductDiscountManager = ({ productId, token }) => {
       setDiscountInfo(null);
     } catch (error) {
       console.error("Error removing discount:", error);
-      const msg = error.response?.data?.responseBody?.message || error.response?.data?.message || error.message || "Failed to remove discount";
+      const msg = extractApiErrors(error, "Failed to remove discount");
       toast.error(msg);
     } finally {
       setLoading(false);

@@ -251,17 +251,18 @@ const ListSubCategory = ({
 
   return (
     <div className="p-4">
-      <h2 className="text-xl font-bold mb-4">Sub-Categories List</h2>
-
-      <button
-        onClick={() => setActiveTab("add-sub")}
-        className="bg-green-500 text-white px-4 py-2 rounded mb-4"
-      >
-        Add New Sub-Category
-      </button>
+      <div className="flex items-center justify-between mb-4">
+        <h2 className="text-xl font-bold">Sub-Categories List</h2>
+        <button
+          onClick={() => setActiveTab("add-sub")}
+          className="px-4 py-2 rounded bg-green-600 text-white hover:bg-green-700"
+        >
+          Add New Sub-Category
+        </button>
+      </div>
 
       {/* Filters */}
-      <div className="flex gap-3 mb-4 flex-wrap">
+      <div className="mb-4 bg-white p-4 rounded-xl shadow flex gap-3 flex-wrap">
         <input
           type="text"
           placeholder="Search sub-categories..."
@@ -270,7 +271,7 @@ const ListSubCategory = ({
             setSearch(e.target.value);
             setPage(1);
           }}
-          className="border px-3 py-2 rounded w-60"
+          className="border px-3 py-2 rounded w-60 focus:outline-none focus:ring-2 focus:ring-blue-300 focus:border-blue-300"
         />
         <select
           value={isActive}
@@ -278,7 +279,7 @@ const ListSubCategory = ({
             setIsActive(e.target.value);
             setPage(1);
           }}
-          className="border px-3 py-2 rounded"
+          className="border px-3 py-2 rounded focus:outline-none focus:ring-2 focus:ring-blue-300 focus:border-blue-300"
         >
           <option value="">All (Active/Inactive)</option>
           <option value="true">Active</option>
@@ -290,7 +291,7 @@ const ListSubCategory = ({
             setIsDeleted(e.target.value);
             setPage(1);
           }}
-          className="border px-3 py-2 rounded"
+          className="border px-3 py-2 rounded focus:outline-none focus:ring-2 focus:ring-blue-300 focus:border-blue-300"
         >
           <option value="">All (Deleted/Not Deleted)</option>
           <option value="true">Deleted</option>
@@ -330,20 +331,14 @@ const ListSubCategory = ({
               </p>
 
               {/* ✅ Status */}
-              <p
-                className={`text-xs font-medium mb-1 ${
-                  subCat.isActive ? "text-green-600" : "text-red-600"
-                }`}
-              >
-                {subCat.isActive ? "Active ✅" : "Inactive ❌"}
-              </p>
-              <p
-                className={`text-xs font-medium mb-3 ${
-                  subCat.deleted ? "text-gray-500" : "text-blue-600"
-                }`}
-              >
-                {subCat.deleted ? "Deleted 🗑️" : "Not Deleted"}
-              </p>
+              <div className="flex items-center gap-2 mb-3">
+                <span className={`px-2 py-0.5 text-[11px] rounded-full font-medium ${subCat.isActive ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
+                  {subCat.isActive ? 'Active' : 'Inactive'}
+                </span>
+                {subCat.deleted && (
+                  <span className="px-2 py-0.5 text-[11px] rounded-full font-medium bg-gray-100 text-gray-700">Deleted</span>
+                )}
+              </div>
 
               {/* ✅ Actions */}
               <div className="flex flex-wrap gap-2">
@@ -352,7 +347,7 @@ const ListSubCategory = ({
                     e.stopPropagation();
                     handleViewSubCategory(subCat);
                   }}
-                  className="bg-purple-500 text-white px-3 py-1 rounded"
+                  className="bg-purple-600 hover:bg-purple-700 text-white px-3 py-1 rounded"
                 >
                   View
                 </button>
@@ -361,7 +356,7 @@ const ListSubCategory = ({
                     e.stopPropagation();
                     handleEditSubCategory(subCat);
                   }}
-                  className="bg-blue-500 text-white px-3 py-1 rounded"
+                  className="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded"
                 >
                   Edit
                 </button>
@@ -370,7 +365,7 @@ const ListSubCategory = ({
                     e.stopPropagation();
                     setDeleteId(subCat.id);
                   }}
-                  className="bg-red-500 text-white px-3 py-1 rounded"
+                  className="bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded"
                 >
                   Delete
                 </button>
@@ -380,7 +375,7 @@ const ListSubCategory = ({
                       e.stopPropagation();
                       deactivateSubCategory(subCat.id);
                     }}
-                    className="bg-yellow-500 text-white px-3 py-1 rounded"
+                    className="bg-yellow-500 hover:bg-yellow-600 text-white px-3 py-1 rounded"
                   >
                     Deactivate
                   </button>
@@ -390,7 +385,7 @@ const ListSubCategory = ({
                       e.stopPropagation();
                       activateSubCategory(subCat);
                     }}
-                    className="bg-green-500 text-white px-3 py-1 rounded"
+                    className="bg-green-600 hover:bg-green-700 text-white px-3 py-1 rounded"
                   >
                     Activate
                   </button>
@@ -401,7 +396,7 @@ const ListSubCategory = ({
                       e.stopPropagation();
                       restoreSubCategory(subCat.id);
                     }}
-                    className="bg-green-500 text-white px-3 py-1 rounded"
+                    className="bg-green-600 hover:bg-green-700 text-white px-3 py-1 rounded"
                   >
                     Restore
                   </button>
@@ -417,17 +412,17 @@ const ListSubCategory = ({
         <button
           disabled={page <= 1}
           onClick={() => setPage((p) => p - 1)}
-          className="px-3 py-1 bg-gray-300 rounded disabled:opacity-50"
+          className="px-3 py-1 rounded bg-gray-100 hover:bg-gray-200 disabled:opacity-50"
         >
           Prev
         </button>
-        <span>
+        <span className="text-sm text-gray-600">
           Page {page} of {totalPages}
         </span>
         <button
           disabled={page >= totalPages}
           onClick={() => setPage((p) => p + 1)}
-          className="px-3 py-1 bg-gray-300 rounded disabled:opacity-50"
+          className="px-3 py-1 rounded bg-gray-100 hover:bg-gray-200 disabled:opacity-50"
         >
           Next
         </button>
@@ -437,7 +432,7 @@ const ListSubCategory = ({
             setPageSize(Number(e.target.value));
             setPage(1);
           }}
-          className="border px-2 py-1 rounded"
+          className="border px-2 py-1 rounded focus:outline-none focus:ring-2 focus:ring-blue-300 focus:border-blue-300"
         >
           <option value={5}>5 / page</option>
           <option value={10}>10 / page</option>

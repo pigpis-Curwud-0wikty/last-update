@@ -15,6 +15,7 @@ import OrderCreate from "./pages/OrderCreate";
 import Collections from "./pages/Category";
 import CollectionManager from "./pages/CollectionManager";
 import SubCategoryDetails from "./pages/SubCategoryDetails";
+import SubCategoryManager from "./pages/SubCategoryManager";
 import ProductDetails from "./pages/ProductDetails";
 import Settings from "./pages/Settings";
 import Users from "./pages/Users";
@@ -107,7 +108,7 @@ function App() {
                 <Route path="/products/:productId/discount" element={<ProductDiscountPage token={token} />} />
                 <Route path="/discounts" element={<DiscountManager token={token} />} />
                 <Route path="/bulk-discount" element={<BulkDiscountPage token={token} />} />
-                <Route path="/sub-category" element={<List token={token} />} />
+                <Route path="/sub-category" element={<SubCategoryManager token={token} />} />
                 <Route
                   path="/collections"
                   element={<Collections token={token} backendUrl={backendUrl} />}

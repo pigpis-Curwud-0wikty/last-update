@@ -8,6 +8,30 @@ const ProductDiscountPage = ({ token }) => {
   const [loading, setLoading] = useState(false);
   const [selectedProductId, setSelectedProductId] = useState("");
 
+  // Helper to extract detailed messages
+  const extractApiErrors = (err, fallbackMessage) => {
+    const rb = err?.response?.data?.responseBody;
+    const msgs = [];
+    if (Array.isArray(rb?.errors?.messages) && rb.errors.messages.length) {
+      msgs.push(...rb.errors.messages);
+    }
+    const modelState = rb?.errors?.modelState || rb?.errors?.ModelState || rb?.errors?.details;
+    if (modelState && typeof modelState === "object") {
+      Object.values(modelState).forEach((v) => {
+        if (Array.isArray(v)) msgs.push(...v);
+        else if (typeof v === "string") msgs.push(v);
+      });
+    }
+    if (msgs.length) return msgs.join("\n");
+    return (
+      rb?.message ||
+      err?.response?.data?.message ||
+      err?.message ||
+      fallbackMessage ||
+      "Operation failed"
+    );
+  };
+
   // Fetch products when component mounts
   useEffect(() => {
     const fetchProducts = async () => {
@@ -17,7 +41,8 @@ const ProductDiscountPage = ({ token }) => {
         setProducts(response.responseBody?.data || []);
       } catch (error) {
         console.error("Error fetching products:", error);
-        toast.error("Failed to load products");
+        const msg = extractApiErrors(error, "Failed to load products");
+        toast.error(msg);
       } finally {
         setLoading(false);
       }

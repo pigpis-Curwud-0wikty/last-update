@@ -1,11 +1,48 @@
 import React, { useState, useEffect } from "react";
+import { useLocation } from "react-router-dom";
 import { toast } from "react-toastify";
 import API from "../services/api";
 import DiscountForm from "../components/discounts/DiscountForm";
 import DiscountList from "../components/discounts/DiscountList";
 import DiscountFilter from "../components/discounts/DiscountFilter";
+import BulkDiscountManager from "../components/products/BulkDiscountManager";
 
 const DiscountManager = ({ token }) => {
+  // UI: simple tabs to merge bulk discount page here
+  const [activeTab, setActiveTab] = useState("manage"); // manage | bulk
+  const location = useLocation();
+
+  // Sync tab from query string (?tab=manage|bulk)
+  useEffect(() => {
+    const sp = new URLSearchParams(location.search);
+    const tab = sp.get("tab");
+    if (tab === "bulk" || tab === "manage") {
+      setActiveTab(tab);
+    }
+  }, [location.search]);
+  // Helper: extract detailed API error messages
+  const extractApiErrors = (err, fallbackMessage) => {
+    const rb = err?.response?.data?.responseBody;
+    const msgs = [];
+    if (Array.isArray(rb?.errors?.messages) && rb.errors.messages.length) {
+      msgs.push(...rb.errors.messages);
+    }
+    const modelState = rb?.errors?.modelState || rb?.errors?.ModelState || rb?.errors?.details;
+    if (modelState && typeof modelState === "object") {
+      Object.values(modelState).forEach((v) => {
+        if (Array.isArray(v)) msgs.push(...v);
+        else if (typeof v === "string") msgs.push(v);
+      });
+    }
+    if (msgs.length) return msgs.join("\n");
+    return (
+      rb?.message ||
+      err?.response?.data?.message ||
+      err?.message ||
+      fallbackMessage ||
+      "Operation failed"
+    );
+  };
   // State for discount form
   const [formData, setFormData] = useState({
     name: "",
@@ -47,12 +84,11 @@ const DiscountManager = ({ token }) => {
       };
       
       const response = await API.discounts.list(params, token);
-      console.log("Response from API:", response); // DEBUG
-      setDiscounts(response.responseBody?.data || []);
-      setTotalItems(response.responseBody?.totalCount || 0);
+      setDiscounts(response?.responseBody?.data || response?.data || []);
+      setTotalItems(response?.responseBody?.totalCount || 0);
     } catch (error) {
       console.error("Error fetching discounts:", error);
-      toast.error("Failed to load discounts");
+      toast.error(extractApiErrors(error, "Failed to load discounts"));
     } finally {
       setDiscountsLoading(false);
     }
@@ -87,7 +123,8 @@ const DiscountManager = ({ token }) => {
   // Load discount for editing
   const handleEditDiscount = async (id) => {
     try {
-      const discount = await API.discounts.getById(id, token);
+      const res = await API.discounts.getById(id, token);
+      const discount = res?.responseBody?.data || res?.data || res;
       setFormData({
         id: id, // Include the ID for product association
         name: discount.name || "",
@@ -104,7 +141,7 @@ const DiscountManager = ({ token }) => {
       setEditId(id);
     } catch (error) {
       console.error("Error loading discount for edit:", error);
-      toast.error("Failed to load discount details");
+      toast.error(extractApiErrors(error, "Failed to load discount details"));
     }
   };
 
@@ -126,7 +163,7 @@ const DiscountManager = ({ token }) => {
     try {
       const discountData = {
         name: formData.name,
-        discountPercent: parseInt(formData.discountPercent),
+        discountPercent: parseInt(formData.discountPercent, 10),
         startDate: formData.startDate || new Date().toISOString(),
         endDate:
           formData.endDate ||
@@ -154,7 +191,10 @@ const DiscountManager = ({ token }) => {
     } catch (error) {
       console.error("Error saving discount:", error.response?.data || error);
       toast.error(
-        editMode ? "Failed to update discount" : "Failed to create discount"
+        extractApiErrors(
+          error,
+          editMode ? "Failed to update discount" : "Failed to create discount"
+        )
       );
     } finally {
       setDiscountLoading(false);
@@ -174,7 +214,7 @@ const DiscountManager = ({ token }) => {
       await fetchDiscounts();
     } catch (error) {
       console.error("Error deleting discount:", error);
-      toast.error("Failed to delete discount");
+      toast.error(extractApiErrors(error, "Failed to delete discount"));
     }
   };
 
@@ -191,11 +231,20 @@ const DiscountManager = ({ token }) => {
         toast.success("Discount activated");
       }
 
+      // Optimistically update local state so UI reflects immediately
+      setDiscounts((prev) =>
+        Array.isArray(prev)
+          ? prev.map((d) =>
+              d.id === id ? { ...d, isActive: !currentStatus } : d
+            )
+          : prev
+      );
+
       // تحديث الجدول بعد نجاح العملية
       await fetchDiscounts();
     } catch (error) {
       console.error("Error toggling discount status:", error);
-      toast.error("Failed to update discount status");
+      toast.error(extractApiErrors(error, "Failed to update discount status"));
     }
   };
 
@@ -209,33 +258,38 @@ const DiscountManager = ({ token }) => {
       await fetchDiscounts();
     } catch (error) {
       console.error("Error restoring discount:", error);
-      toast.error("Failed to restore discount");
+      toast.error(extractApiErrors(error, "Failed to restore discount"));
     }
   };
 
   // Validate discount
   const handleValidateDiscount = async (id) => {
     try {
-      const result = await API.discounts.validate(id, token);
-      toast.info(`Discount validation: ${result ? "Valid" : "Invalid"}`);
+      const res = await API.discounts.validate(id, token);
+      const result = res?.responseBody?.data ?? res?.data ?? res;
+      const valid = typeof result === "boolean" ? result : !!result?.isValid;
+      toast.info(`Discount validation: ${valid ? "Valid" : "Invalid"}`);
     } catch (error) {
       console.error("Error validating discount:", error);
-      toast.error("Failed to validate discount");
+      toast.error(extractApiErrors(error, "Failed to validate discount"));
     }
   };
 
   // Calculate discount
   const handleCalculateDiscount = async (id, originalPrice) => {
     try {
-      const result = await API.discounts.calculate(id, originalPrice, token);
-      return result;
+      const res = await API.discounts.calculate(id, originalPrice, token);
+      return res?.responseBody?.data ?? res?.data ?? res;
     } catch (error) {
       console.error("Error calculating discount:", error);
-      if (error.response && error.response.data && error.response.data.message === "No products associated with this discount") {
+      if (
+        error?.response?.data?.message === "No products associated with this discount" ||
+        error?.response?.data?.responseBody?.message === "No products associated with this discount"
+      ) {
         // If the backend explicitly tells us there are no products, let's handle it
         toast.info("Please associate products with this discount first");
       } else {
-        toast.error("Failed to calculate discount");
+        toast.error(extractApiErrors(error, "Failed to calculate discount"));
       }
       return null;
     }
@@ -264,43 +318,77 @@ const DiscountManager = ({ token }) => {
 
   return (
     <div className="p-4">
-      <h2 className="text-xl font-semibold mb-4">Discount Management</h2>
+      <div className="flex items-center justify-between mb-4">
+        <h2 className="text-xl font-semibold">Discounts</h2>
+      </div>
 
-      {/* Discount Form */}
-      <DiscountForm
-        formData={formData}
-        handleInputChange={handleInputChange}
-        handleSubmitDiscount={handleSubmitDiscount}
-        resetForm={resetForm}
-        editMode={editMode}
-        discountLoading={discountLoading}
-        token={token}
-      />
+      {/* Tabs */}
+      <div className="flex flex-wrap gap-2 mb-6">
+        <button
+          onClick={() => setActiveTab("manage")}
+          className={`px-4 py-2 rounded-full transition ${
+            activeTab === "manage" ? "bg-blue-600 text-white shadow" : "bg-gray-100 hover:bg-gray-200 text-gray-700"
+          }`}
+        >
+          Manage Discounts
+        </button>
+        <button
+          onClick={() => setActiveTab("bulk")}
+          className={`px-4 py-2 rounded-full transition ${
+            activeTab === "bulk" ? "bg-blue-600 text-white shadow" : "bg-gray-100 hover:bg-gray-200 text-gray-700"
+          }`}
+        >
+          Bulk Apply
+        </button>
+      </div>
 
-      {/* Filters */}
-      <DiscountFilter
-        filters={filter}
-        handleFilterChange={handleFilterChange}
-        handleApplyFilters={handleApplyFilters}
-      />
+      {activeTab === "manage" && (
+        <>
+          {/* Discount Form */}
+          <DiscountForm
+            formData={formData}
+            handleInputChange={handleInputChange}
+            handleSubmitDiscount={handleSubmitDiscount}
+            resetForm={resetForm}
+            editMode={editMode}
+            discountLoading={discountLoading}
+            token={token}
+          />
 
-      {/* Discount List */}
-      <DiscountList
-        discounts={discounts}
-        loading={discountsLoading}
-        handleEditDiscount={handleEditDiscount}
-        handleDeleteDiscount={handleDeleteDiscount}
-        handleToggleActive={handleToggleActive}
-        handleRestoreDiscount={handleRestoreDiscount}
-        handleCalculateDiscount={handleCalculateDiscount}
-        fetchDiscounts={fetchDiscounts} // ← لازم تضيف هذا
-        currentPage={page}
-        totalPages={Math.ceil(totalItems / pageSize)}
-        handlePreviousPage={() => handlePageChange(page - 1)}
-        handleNextPage={() => handlePageChange(page + 1)}
-      />
+          {/* Filters */}
+          <DiscountFilter
+            filters={filter}
+            handleFilterChange={handleFilterChange}
+            handleApplyFilters={handleApplyFilters}
+          />
+
+          {/* Discount List */}
+          <DiscountList
+            discounts={discounts}
+            loading={discountsLoading}
+            handleEditDiscount={handleEditDiscount}
+            handleDeleteDiscount={handleDeleteDiscount}
+            handleToggleActive={handleToggleActive}
+            handleRestoreDiscount={handleRestoreDiscount}
+            handleCalculateDiscount={handleCalculateDiscount}
+            fetchDiscounts={fetchDiscounts}
+            currentPage={page}
+            totalPages={Math.ceil(totalItems / pageSize)}
+            handlePreviousPage={() => handlePageChange(page - 1)}
+            handleNextPage={() => handlePageChange(page + 1)}
+          />
+        </>
+      )}
+
+      {activeTab === "bulk" && (
+        <div className="bg-white rounded-xl shadow p-4">
+          <h3 className="text-lg font-semibold mb-2">Bulk Discount Management</h3>
+          <p className="mb-4 text-gray-600">Apply an existing discount to multiple products at once.</p>
+          <BulkDiscountManager token={token} />
+        </div>
+      )}
     </div>
   );
-};
+}
 
 export default DiscountManager;

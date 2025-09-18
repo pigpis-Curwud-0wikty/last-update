@@ -8,8 +8,6 @@ const ListCategory = ({
   token,
   categories,
   setCategories,
-  setActiveTab,
-  setParentCategoryId,
   handleEditCategory,
   handleViewCategory,
 }) => {
@@ -195,17 +193,18 @@ const ListCategory = ({
 
   return (
     <div className="p-4">
-      <h2 className="text-xl font-bold mb-4">Categories List</h2>
-
-      <button
-        onClick={() => handleEditCategory(null)}
-        className="bg-green-500 text-white px-4 py-2 rounded mb-4"
-      >
-        Add New Category
-      </button>
+      <div className="flex items-center justify-between mb-4">
+        <h2 className="text-xl font-bold">Categories List</h2>
+        <button
+          onClick={() => handleEditCategory(null)}
+          className="px-4 py-2 rounded bg-green-600 text-white hover:bg-green-700"
+        >
+          Add New Category
+        </button>
+      </div>
 
       {/* Filters */}
-      <div className="flex gap-3 mb-4 flex-wrap">
+      <div className="mb-4 bg-white p-4 rounded-xl shadow flex gap-3 flex-wrap">
         <input
           type="text"
           placeholder="Search categories..."
@@ -214,7 +213,7 @@ const ListCategory = ({
             setSearch(e.target.value);
             setPage(1);
           }}
-          className="border px-3 py-2 rounded w-60"
+          className="border px-3 py-2 rounded w-60 focus:outline-none focus:ring-2 focus:ring-blue-300 focus:border-blue-300"
         />
         <select
           value={isActive}
@@ -222,7 +221,7 @@ const ListCategory = ({
             setIsActive(e.target.value);
             setPage(1);
           }}
-          className="border px-3 py-2 rounded"
+          className="border px-3 py-2 rounded focus:outline-none focus:ring-2 focus:ring-blue-300 focus:border-blue-300"
         >
           <option value="">All (Active/Inactive)</option>
           <option value="true">Active</option>
@@ -234,7 +233,7 @@ const ListCategory = ({
             setIsDeleted(e.target.value);
             setPage(1);
           }}
-          className="border px-3 py-2 rounded"
+          className="border px-3 py-2 rounded focus:outline-none focus:ring-2 focus:ring-blue-300 focus:border-blue-300"
         >
           <option value="">All (Deleted/Not Deleted)</option>
           <option value="true">Deleted</option>
@@ -263,34 +262,22 @@ const ListCategory = ({
                   No Image
                 </div>
               )}
-              <h3 className="font-semibold text-lg mb-1">{cat.name}</h3>
+              <h3 className="font-semibold text-lg mb-1 line-clamp-1">{cat.name}</h3>
               <p className="text-sm text-gray-600 mb-2">
                 {cat.description || "No description"}
               </p>
               <p />
               {/* ✅ Status */}
-              <p
-                className={`text-xs font-medium mb-1 ${
-                  cat.isActive ? "text-green-600" : "text-red-600"
-                }`}
-              >
-                {cat.isActive ? "Active ✅" : "Inactive ❌"}
-              </p>
-              <p
-                className={`text-xs font-medium mb-3 ${
-                  cat.isDeleted
-                    ? "text-gray-500"
-                    : cat.wasDeleted
-                      ? "text-orange-500"
-                      : "text-blue-600"
-                }`}
-              >
-                {cat.isDeleted
-                  ? "Deleted 🗑️"
-                  : cat.wasDeleted
-                    ? "Was Deleted 🗑️"
-                    : "Not Deleted"}
-              </p>
+              <div className="flex items-center gap-2 mb-3">
+                <span className={`px-2 py-0.5 text-[11px] rounded-full font-medium ${cat.isActive ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
+                  {cat.isActive ? 'Active' : 'Inactive'}
+                </span>
+                {cat.isDeleted ? (
+                  <span className="px-2 py-0.5 text-[11px] rounded-full font-medium bg-gray-100 text-gray-700">Deleted</span>
+                ) : cat.wasDeleted ? (
+                  <span className="px-2 py-0.5 text-[11px] rounded-full font-medium bg-amber-100 text-amber-700">Was Deleted</span>
+                ) : null}
+              </div>
 
               <div className="flex flex-wrap gap-2">
                 <button
@@ -298,7 +285,7 @@ const ListCategory = ({
                     e.stopPropagation();
                     handleEditCategory(cat);
                   }}
-                  className="bg-blue-500 text-white px-3 py-1 rounded"
+                  className="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded"
                 >
                   Edit
                 </button>
@@ -310,7 +297,7 @@ const ListCategory = ({
                       e.stopPropagation();
                       setDeleteId(cat.id);
                     }}
-                    className="bg-red-500 text-white px-3 py-1 rounded"
+                    className="bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded"
                   >
                     Delete
                   </button>
@@ -320,7 +307,7 @@ const ListCategory = ({
                       e.stopPropagation();
                       restoreCategory(cat.id);
                     }}
-                    className="bg-green-500 text-white px-3 py-1 rounded"
+                    className="bg-green-600 hover:bg-green-700 text-white px-3 py-1 rounded"
                   >
                     Restore
                   </button>
@@ -332,7 +319,7 @@ const ListCategory = ({
                       e.stopPropagation();
                       deactivateCategory(cat.id);
                     }}
-                    className="bg-yellow-500 text-white px-3 py-1 rounded"
+                    className="bg-yellow-500 hover:bg-yellow-600 text-white px-3 py-1 rounded"
                   >
                     Deactivate
                   </button>
@@ -342,7 +329,7 @@ const ListCategory = ({
                       e.stopPropagation();
                       activateCategory(cat);
                     }}
-                    className="bg-green-500 text-white px-3 py-1 rounded"
+                    className="bg-green-600 hover:bg-green-700 text-white px-3 py-1 rounded"
                   >
                     Activate
                   </button>
@@ -351,19 +338,9 @@ const ListCategory = ({
                 <button
                   onClick={(e) => {
                     e.stopPropagation();
-                    setActiveTab("add-sub");
-                    setParentCategoryId(cat.id);
-                  }}
-                  className="bg-indigo-500 text-white px-3 py-1 rounded"
-                >
-                  Add Subcategory
-                </button>
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation();
                     handleViewCategory(cat);
                   }}
-                  className="bg-purple-500 text-white px-3 py-1 rounded"
+                  className="bg-purple-600 hover:bg-purple-700 text-white px-3 py-1 rounded"
                 >
                   View Details
                 </button>
@@ -378,17 +355,17 @@ const ListCategory = ({
         <button
           disabled={page <= 1}
           onClick={() => setPage((p) => p - 1)}
-          className="px-3 py-1 bg-gray-300 rounded disabled:opacity-50"
+          className="px-3 py-1 rounded bg-gray-100 hover:bg-gray-200 disabled:opacity-50"
         >
           Prev
         </button>
-        <span>
+        <span className="text-sm text-gray-600">
           Page {page} of {totalPages}
         </span>
         <button
           disabled={page >= totalPages}
           onClick={() => setPage((p) => p + 1)}
-          className="px-3 py-1 bg-gray-300 rounded disabled:opacity-50"
+          className="px-3 py-1 rounded bg-gray-100 hover:bg-gray-200 disabled:opacity-50"
         >
           Next
         </button>

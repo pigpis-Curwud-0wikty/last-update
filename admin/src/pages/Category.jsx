@@ -8,8 +8,7 @@ import { useParams, useLocation, useNavigate } from "react-router-dom";
 import AddCategory from "../components/categories/AddCategory";
 import ViewCategory from "../components/categories/ViewCategory";
 import ListCategory from "../components/categories/ListCategory";
-import AddSubCategory from "../components/categories/AddSubCategory";
-import ListSubCategory from "../components/categories/ListSubCategory";
+// Subcategory management moved to dedicated SubCategoryManager page
 
 const Categorys = ({ token }) => {
   const { categoryId } = useParams();
@@ -32,16 +31,7 @@ const Categorys = ({ token }) => {
   const [editMode, setEditMode] = useState(false);
   const [editCategoryId, setEditCategoryId] = useState(null);
 
-  // sub-category states
-  const [subCategories, setSubCategories] = useState([]);
-  const [parentCategoryId, setParentCategoryId] = useState("");
-  const [subCategoryName, setSubCategoryName] = useState("");
-  const [subCategoryDescription, setSubCategoryDescription] = useState("");
-  const [subCategoryDisplayOrder, setSubCategoryDisplayOrder] = useState(1);
-  const [subCategoryImages, setSubCategoryImages] = useState([]);
-  const [subCategoryMainImage, setSubCategoryMainImage] = useState(null);
-  const [editSubCategoryId, setEditSubCategoryId] = useState(null);
-  const [editSubCategoryMode, setEditSubCategoryMode] = useState(false);
+  // Subcategory states removed (managed in SubCategoryManager page)
 
   // search states for ViewCategory
   const [searchId, setSearchId] = useState(categoryId || "");
@@ -143,16 +133,7 @@ const Categorys = ({ token }) => {
     token,
   ]);
 
-  // ✅ Handle Edit SubCategory
-  const handleEditSubCategory = (subCat) => {
-    setEditSubCategoryMode(true);
-    setEditSubCategoryId(subCat.id);
-    setSubCategoryName(subCat.name);
-    setSubCategoryDescription(subCat.description);
-    setSubCategoryDisplayOrder(subCat.displayOrder);
-    setParentCategoryId(Number(subCat.parentCategoryId));
-    setActiveTab("add-sub");
-  };
+  // Subcategory edit handled in SubCategoryManager page
 
   // ✅ Handle Edit Category
   const handleEditCategory = (cat) => {
@@ -199,31 +180,31 @@ const Categorys = ({ token }) => {
     navigate(`/subcategories/${id}`);
   };
 
-  // ✅ Handle View SubCategory → navigate to dedicated details route
-  const handleViewSubCategory = (subCat) => {
-    navigate(`/subcategories/${subCat.id}`);
-  };
+  // Subcategory view handled in SubCategoryManager page
 
   return (
     <div className="container mx-auto p-4">
-      <h1 className="text-2xl font-bold mb-6">Category Management</h1>
+      <div className="flex items-center justify-between mb-6">
+        <h1 className="text-2xl font-bold">Category Management</h1>
+        <div className="text-sm text-gray-500">Create, view and organize categories</div>
+      </div>
 
       {/* Quick navigation to dedicated details pages */}
-      <div className="flex flex-col md:flex-row gap-3 mb-4">
+      <div className="flex flex-col md:flex-row gap-3 mb-6 bg-white p-4 rounded-xl shadow">
         <div className="flex items-center gap-2">
           <input
             type="number"
             placeholder="Category ID"
             value={searchId}
             onChange={(e) => setSearchId(e.target.value)}
-            className="border px-3 py-2 rounded w-44"
+            className="border px-3 py-2 rounded w-44 focus:outline-none focus:ring-2 focus:ring-blue-300 focus:border-blue-300"
           />
           <button
             onClick={() => {
               if (!searchId) return toast.error("Enter category ID");
               navigate(`/category/view/${searchId}`);
             }}
-            className="px-3 py-2 bg-blue-600 text-white rounded"
+            className="px-3 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition"
           >
             Open Category Details Page
           </button>
@@ -239,7 +220,7 @@ const Categorys = ({ token }) => {
                 navigate(`/subcategories/${val}`);
               }
             }}
-            className="border px-3 py-2 rounded w-44"
+            className="border px-3 py-2 rounded w-44 focus:outline-none focus:ring-2 focus:ring-purple-300 focus:border-purple-300"
           />
           <button
             onClick={(e) => {
@@ -248,7 +229,7 @@ const Categorys = ({ token }) => {
               if (!val) return toast.error("Enter subcategory ID");
               navigate(`/subcategories/${val}`);
             }}
-            className="px-3 py-2 bg-purple-600 text-white rounded"
+            className="px-3 py-2 bg-purple-600 text-white rounded hover:bg-purple-700 transition"
           >
             Open SubCategory Details Page
           </button>
@@ -259,40 +240,24 @@ const Categorys = ({ token }) => {
       <div className="flex flex-wrap gap-2 mb-6">
         <button
           onClick={() => setActiveTab("add")}
-          className={`px-4 py-2 rounded ${
-            activeTab === "add" ? "bg-blue-600 text-white" : "bg-gray-200"
+          className={`px-4 py-2 rounded-full transition ${
+            activeTab === "add" ? "bg-blue-600 text-white shadow" : "bg-gray-100 hover:bg-gray-200 text-gray-700"
           }`}
         >
           Add Category
         </button>
         <button
           onClick={() => setActiveTab("list")}
-          className={`px-4 py-2 rounded ${
-            activeTab === "list" ? "bg-blue-600 text-white" : "bg-gray-200"
+          className={`px-4 py-2 rounded-full transition ${
+            activeTab === "list" ? "bg-blue-600 text-white shadow" : "bg-gray-100 hover:bg-gray-200 text-gray-700"
           }`}
         >
           Categories List
         </button>
         <button
-          onClick={() => setActiveTab("add-sub")}
-          className={`px-4 py-2 rounded ${
-            activeTab === "add-sub" ? "bg-blue-600 text-white" : "bg-gray-200"
-          }`}
-        >
-          Add Sub-Category
-        </button>
-        <button
-          onClick={() => setActiveTab("sub-list")}
-          className={`px-4 py-2 rounded ${
-            activeTab === "sub-list" ? "bg-blue-600 text-white" : "bg-gray-200"
-          }`}
-        >
-          Sub-Categories List
-        </button>
-        <button
           onClick={() => setActiveTab("category")}
-          className={`px-4 py-2 rounded ${
-            activeTab === "category" ? "bg-blue-600 text-white" : "bg-gray-200"
+          className={`px-4 py-2 rounded-full transition ${
+            activeTab === "category" ? "bg-blue-600 text-white shadow" : "bg-gray-100 hover:bg-gray-200 text-gray-700"
           }`}
         >
           View Category
@@ -330,47 +295,12 @@ const Categorys = ({ token }) => {
           setActiveTab={setActiveTab}
           handleEditCategory={handleEditCategory}
           handleViewCategory={handleViewCategory}
-          setParentCategoryId={setParentCategoryId}
           fetchCategories={fetchCategories}
         />
       )}
 
-      {activeTab === "add-sub" && (
-        <AddSubCategory
-          token={token}
-          categories={categories}
-          setActiveTab={setActiveTab}
-          parentCategoryId={parentCategoryId}
-          setParentCategoryId={setParentCategoryId}
-          subCategoryName={subCategoryName}
-          setSubCategoryName={setSubCategoryName}
-          subCategoryDescription={subCategoryDescription}
-          setSubCategoryDescription={setSubCategoryDescription}
-          subCategoryDisplayOrder={subCategoryDisplayOrder}
-          setSubCategoryDisplayOrder={setSubCategoryDisplayOrder}
-          subCategoryImages={subCategoryImages}
-          setSubCategoryImages={setSubCategoryImages}
-          subCategoryMainImage={subCategoryMainImage}
-          setSubCategoryMainImage={setSubCategoryMainImage}
-          editSubCategoryMode={editSubCategoryMode}
-          editSubCategoryId={editSubCategoryId}
-        />
-      )}
-
-      {activeTab === "sub-list" && (
-        <ListSubCategory
-          token={token}
-          subCategories={subCategories}
-          setSubCategories={setSubCategories}
-          categories={categories}
-          setActiveTab={setActiveTab}
-          handleEditSubCategory={handleEditSubCategory}
-          handleViewSubCategory={handleViewSubCategory}
-        />
-      )}
-
       {activeTab === "category" && (
-        <div className="p-4 bg-gray-50 rounded-md">
+        <div className="p-4 bg-white rounded-xl shadow">
           <h2 className="text-xl font-bold mb-2">View Category</h2>
 
           <div className="flex gap-2 mb-4">

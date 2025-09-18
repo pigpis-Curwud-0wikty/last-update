@@ -26,6 +26,49 @@ const ProductVariant = ({ token }) => {
   const [selectedVariantId, setSelectedVariantId] = useState(null);
   const [adjustQuantity, setAdjustQuantity] = useState("");
 
+  // Enum-based size options (E_Commerce.Enums.VariantSize)
+  const SIZE_OPTIONS = [
+    { value: 0, label: "XS" },
+    { value: 1, label: "S" },
+    { value: 2, label: "M" },
+    { value: 3, label: "L" },
+    { value: 4, label: "XL" },
+    { value: 5, label: "XXL" },
+    { value: 6, label: "XXXL" },
+  ];
+  const sizeCodeToLabel = (code) => {
+    const opt = SIZE_OPTIONS.find((o) => Number(o.value) === Number(code));
+    return opt ? opt.label : (code ?? "-");
+  };
+
+  // Helper: extract detailed API error messages
+  const extractApiErrors = (err, fallbackMessage) => {
+    const rb = err?.response?.data?.responseBody;
+    // Collect messages from various shapes
+    const msgs = [];
+    if (Array.isArray(rb?.errors?.messages) && rb.errors.messages.length) {
+      msgs.push(...rb.errors.messages);
+    }
+    // Sometimes errors come as key->array (model state)
+    const modelState = rb?.errors?.modelState || rb?.errors?.ModelState || rb?.errors?.details;
+    if (modelState && typeof modelState === "object") {
+      Object.values(modelState).forEach((v) => {
+        if (Array.isArray(v)) msgs.push(...v);
+        else if (typeof v === "string") msgs.push(v);
+      });
+    }
+    // If we collected any detailed messages, join and return
+    if (msgs.length) return msgs.join("\n");
+    // Otherwise use message fields in order
+    return (
+      rb?.message ||
+      err?.response?.data?.message ||
+      err?.message ||
+      fallbackMessage ||
+      "Operation failed"
+    );
+  };
+
   // Fetch product details
   useEffect(() => {
     const fetchProduct = async () => {
@@ -35,7 +78,13 @@ const ProductVariant = ({ token }) => {
         setProduct(response.responseBody.data);
       } catch (error) {
         console.error("Error fetching product:", error);
-        toast.error("Failed to load product details");
+        const apiMsg =
+          error?.response?.data?.responseBody?.message ||
+          error?.response?.data?.responseBody?.errors?.messages?.[0] ||
+          error?.response?.data?.message ||
+          error?.message ||
+          "Failed to load product details";
+        toast.error(apiMsg);
       } finally {
         setLoading(false);
       }
@@ -52,7 +101,13 @@ const ProductVariant = ({ token }) => {
       setVariants(response.responseBody.data || []);
     } catch (error) {
       console.error("Error fetching variants:", error);
-      toast.error("Failed to load product variants");
+      const apiMsg =
+        error?.response?.data?.responseBody?.message ||
+        error?.response?.data?.responseBody?.errors?.messages?.[0] ||
+        error?.response?.data?.message ||
+        error?.message ||
+        "Failed to load product variants";
+      toast.error(apiMsg);
     } finally {
       setVariantsLoading(false);
     }
@@ -111,11 +166,7 @@ const ProductVariant = ({ token }) => {
       fetchVariants();
     } catch (error) {
       console.error("Error adding variant:", error);
-      const apiMsg =
-        error?.response?.data?.responseBody?.message ||
-        error?.response?.data?.responseBody?.errors?.messages?.[0] ||
-        error?.message ||
-        "Failed to add variant";
+      const apiMsg = extractApiErrors(error, "Failed to add variant");
       toast.error(apiMsg);
     } finally {
       setLoading(false);
@@ -139,7 +190,13 @@ const ProductVariant = ({ token }) => {
       fetchVariants();
     } catch (error) {
       console.error("Error adding quantity:", error);
-      toast.error("Failed to add quantity");
+      const apiMsg =
+        error?.response?.data?.responseBody?.message ||
+        error?.response?.data?.responseBody?.errors?.messages?.[0] ||
+        error?.response?.data?.message ||
+        error?.message ||
+        "Failed to add quantity";
+      toast.error(apiMsg);
     }
   };
 
@@ -169,12 +226,16 @@ const ProductVariant = ({ token }) => {
 
     try {
       await API.variants.delete(productId, variantId, token);
-      alert("✅ تم حذف الـ Variant بنجاح");
+      toast.success("✅ تم حذف الـ Variant بنجاح");
     } catch (err) {
       console.error("❌ Error deleting variant:", err.response?.data || err);
-      alert(
-        `⚠️ فشل حذف الـ Variant: ${err.response?.data?.message || err.message}`
-      );
+      const apiMsg =
+        err?.response?.data?.responseBody?.message ||
+        err?.response?.data?.responseBody?.errors?.messages?.[0] ||
+        err?.response?.data?.message ||
+        err?.message ||
+        "⚠️ فشل حذف الـ Variant";
+      toast.error(apiMsg);
     }
   };
 
@@ -186,7 +247,13 @@ const ProductVariant = ({ token }) => {
       fetchVariants();
     } catch (error) {
       console.error("Error activating variant:", error);
-      toast.error("Failed to activate variant");
+      const apiMsg =
+        error?.response?.data?.responseBody?.message ||
+        error?.response?.data?.responseBody?.errors?.messages?.[0] ||
+        error?.response?.data?.message ||
+        error?.message ||
+        "Failed to activate variant";
+      toast.error(apiMsg);
     }
   };
 
@@ -198,7 +265,13 @@ const ProductVariant = ({ token }) => {
       fetchVariants();
     } catch (error) {
       console.error("Error deactivating variant:", error);
-      toast.error("Failed to deactivate variant");
+      const apiMsg =
+        error?.response?.data?.responseBody?.message ||
+        error?.response?.data?.responseBody?.errors?.messages?.[0] ||
+        error?.response?.data?.message ||
+        error?.message ||
+        "Failed to deactivate variant";
+      toast.error(apiMsg);
     }
   };
 
@@ -210,7 +283,13 @@ const ProductVariant = ({ token }) => {
       fetchVariants();
     } catch (error) {
       console.error("Error restoring variant:", error);
-      toast.error("Failed to restore variant");
+      const apiMsg =
+        error?.response?.data?.responseBody?.message ||
+        error?.response?.data?.responseBody?.errors?.messages?.[0] ||
+        error?.response?.data?.message ||
+        error?.message ||
+        "Failed to restore variant";
+      toast.error(apiMsg);
     }
   };
 
@@ -286,13 +365,16 @@ const ProductVariant = ({ token }) => {
               <label className="block text-sm font-medium text-gray-700">
                 Size
               </label>
-              <input
-                type="number"
+              <select
                 value={size}
                 onChange={(e) => setSize(e.target.value)}
-                className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
-                placeholder="e.g. 42, 44, 46"
-              />
+                className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 bg-white"
+              >
+                <option value="">Select size</option>
+                {SIZE_OPTIONS.map((opt) => (
+                  <option key={opt.value} value={opt.value}>{opt.label}</option>
+                ))}
+              </select>
             </div>
 
             <div>
@@ -395,7 +477,9 @@ const ProductVariant = ({ token }) => {
                           {variant.color || "-"}
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">
-                          {variant.size || "-"}
+                          {variant.size !== undefined && variant.size !== null && variant.size !== ""
+                            ? sizeCodeToLabel(variant.size)
+                            : "-"}
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">
                           {variant.waist ? `W: ${variant.waist}` : ""}

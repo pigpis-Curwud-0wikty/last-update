@@ -211,7 +211,10 @@ const ProductList = ({ token }) => {
       if (cleanParams.onSale === true) {
         items = items.filter((product) => {
           const dp = Number(
-            product.discountPercentage ?? product.discountPrecentage ?? 0
+            (product.discount && (product.discount.discountPercent ?? product.discount.percentage)) ??
+              product.discountPercentage ??
+              product.discountPrecentage ??
+              0
           );
           return !Number.isNaN(dp) && dp > 0;
         });
@@ -226,7 +229,7 @@ const ProductList = ({ token }) => {
         items = items.filter((p) => !p.deletedAt);
       }
 
-      // Only filter by isActive if it's explicitly set
+
       if (params.isActive === true) {
         items = items.filter((p) => p.isActive === true);
       } else if (params.isActive === false) {
@@ -666,7 +669,23 @@ const ProductList = ({ token }) => {
                   return bScore - aScore; // Higher score first
                 })
 
-                .map((product) => (
+                .map((product) => {
+                  const dp = Number(
+                    (product.discount && (product.discount.discountPercent ?? product.discount.percentage)) ??
+                      product.discountPercentage ??
+                      product.discountPrecentage ??
+                      0
+                  );
+                  const hasDiscount = !Number.isNaN(dp) && dp > 0;
+                  const basePrice = Number(product.price || 0);
+                  const serverFinal = product.finalPrice != null ? Number(product.finalPrice) : null;
+                  const finalPrice = hasDiscount
+                    ? (serverFinal != null && !Number.isNaN(serverFinal)
+                        ? serverFinal
+                        : basePrice * (1 - dp / 100))
+                    : basePrice;
+
+                  return (
                   <tr key={product.id}>
                     <td className="px-6 py-4">{product.id}</td>
 
@@ -685,7 +704,16 @@ const ProductList = ({ token }) => {
                       )}
                     </td>
 
-                    <td className="px-6 py-4">{product.name}</td>
+                    <td className="px-6 py-4">
+                      <div className="flex items-center gap-2">
+                        <span>{product.name}</span>
+                        {hasDiscount && (
+                          <span className="px-2 py-0.5 text-xs rounded-full bg-purple-100 text-purple-700">
+                            {dp}% OFF
+                          </span>
+                        )}
+                      </div>
+                    </td>
 
                     <td className="px-6 py-4">
                       {product.description?.length > 50
@@ -693,7 +721,16 @@ const ProductList = ({ token }) => {
                         : product.description}
                     </td>
 
-                    <td className="px-6 py-4">${product.price}</td>
+                    <td className="px-6 py-4">
+                      {hasDiscount ? (
+                        <div className="font-semibold">
+                          <span className="line-through text-gray-500 mr-2">${basePrice.toFixed(2)}</span>
+                          <span className="text-green-700">${finalPrice.toFixed(2)}</span>
+                        </div>
+                      ) : (
+                        <span className="font-semibold">${basePrice.toFixed(2)}</span>
+                      )}
+                    </td>
 
                     <td className="px-6 py-4">
                       {genderMap[product.gender] || "-"}
@@ -780,7 +817,8 @@ const ProductList = ({ token }) => {
                       </div>
                     </td>
                   </tr>
-                ))
+                  );
+                })
             )}
           </tbody>
         </table>

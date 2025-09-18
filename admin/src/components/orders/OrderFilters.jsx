@@ -9,17 +9,17 @@ const OrderFilters = ({
   handleSortChange 
 }) => {
   const STATUS_LABELS = {
-    0: 'Pending',
-    1: 'Processing',
-    2: 'Shipped',
-    3: 'Out for Delivery',
+    0: 'PendingPayment',
+    1: 'Confirmed',
+    2: 'Processing',
+    3: 'Shipped',
     4: 'Delivered',
-    5: 'Cancelled',
-    6: 'Returned',
-    7: 'Refunded',
-    8: 'On Hold',
-    9: 'Failed',
-    10: 'Draft',
+    5: 'CancelledByUser',
+    6: 'Refunded',
+    7: 'Returned',
+    8: 'PaymentExpired',
+    9: 'CancelledByAdmin',
+    10: 'Complete',
   };
 
   return (
