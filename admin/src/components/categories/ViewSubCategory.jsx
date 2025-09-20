@@ -34,7 +34,19 @@ const ViewSubCategory = ({ token, subCategoryId, isActive = null, includeDeleted
       );
 
       if (response.status === 200) {
-        setSubCategory(response.data?.responseBody?.data || null);
+        const responseData = response.data?.responseBody?.data;
+        if (responseData) {
+          // Set subcategory data (excluding products)
+          const { products: subCategoryProducts, ...subCategoryData } = responseData;
+          setSubCategory(subCategoryData);
+          
+          // Set products if they exist in the response
+          if (Array.isArray(subCategoryProducts)) {
+            setProducts(subCategoryProducts);
+          }
+        } else {
+          setSubCategory(null);
+        }
         setError(null);
       } else {
         setSubCategory(null);
@@ -50,32 +62,11 @@ const ViewSubCategory = ({ token, subCategoryId, isActive = null, includeDeleted
     }
   }, [subCategoryId, token, isActive, includeDeleted]);
 
-  const fetchProducts = useCallback(async () => {
-    if (!subCategoryId) return;
-
-    try {
-      const response = await axios.get(`${backendUrl}/api/products`,
-        {
-          headers: { Authorization: `Bearer ${token}` },
-          params: { subCategoryId },
-        }
-      );
-
-      if (response.status === 200) {
-        setProducts(response.data?.responseBody?.data || []);
-      }
-    } catch (err) {
-      console.error("❌ Error fetching products:", err);
-      // Don't set error for products, just log it
-    }
-  }, [subCategoryId, token]);
-
   useEffect(() => {
     if (subCategoryId) {
       fetchSubCategory();
-      fetchProducts();
     }
-  }, [subCategoryId, fetchSubCategory, fetchProducts]);
+  }, [subCategoryId, fetchSubCategory]);
 
   // Actions
   const activateSubCategory = async () => {

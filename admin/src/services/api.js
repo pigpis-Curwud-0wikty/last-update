@@ -131,7 +131,6 @@ const API = {
     // Get product list with advanced search
     list: async ({ page = 1, pageSize = 10, ...filters }, token) => {
       try {
-        // Check if we should use the advanced search endpoint
         const useAdvancedSearch =
           filters.subcategoryId ||
           filters.gender ||
@@ -146,7 +145,6 @@ const API = {
           filters.sortBy;
 
         if (useAdvancedSearch) {
-          // Use the advanced search endpoint
           const queryParams = new URLSearchParams();
           queryParams.append("page", page);
           queryParams.append("pageSize", pageSize);
@@ -158,8 +156,6 @@ const API = {
           if (filters.includeDeleted) {
             queryParams.append("includeDeleted", filters.includeDeleted);
           }
-
-          // Prepare request body for advanced search
           const requestBody = {
             searchTerm: filters.searchTerm || "",
             subcategoryid: filters.subcategoryId
