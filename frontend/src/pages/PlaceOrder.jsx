@@ -226,7 +226,7 @@ const PlaceOrder = () => {
 
       if (orderResponse.data.statuscode === 201 || orderResponse.data.statuscode === 200) {
         const orderData = orderResponse.data.responseBody?.data;
-        const orderNumber = orderData?.orderNumber;
+          const orderNumber = orderData?.orderNumber;
 
         console.log("Order created successfully. Order data:", orderData);
         console.log("Order number:", orderNumber);
@@ -415,7 +415,6 @@ const PlaceOrder = () => {
                     )}
                   </div>
 
-                  {/* أزرار التعديل والحذف */}
                   <div className="flex gap-3 mt-3">
                     <button
                       type="button"
@@ -459,7 +458,6 @@ const PlaceOrder = () => {
             <motion.div variants={itemVariants}>
               <button type="button" onClick={() => {
                 if (showAddAddressForm) {
-                  // Cancel - hide form and reset
                   setShowAddAddressForm(false);
                   setEditingAddressId(null);
                   setAddressFormData({
