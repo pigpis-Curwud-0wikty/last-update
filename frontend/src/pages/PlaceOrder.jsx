@@ -226,7 +226,7 @@ const PlaceOrder = () => {
 
       if (orderResponse.data.statuscode === 201 || orderResponse.data.statuscode === 200) {
         const orderData = orderResponse.data.responseBody?.data;
-        const orderNumber = orderData?.order?.orderNumber;
+        const orderNumber = orderData?.orderNumber;
 
         console.log("Order created successfully. Order data:", orderData);
         console.log("Order number:", orderNumber);
