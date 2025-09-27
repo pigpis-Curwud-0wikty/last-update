@@ -39,23 +39,20 @@ const Dashboard = ({ token }) => {
   }
 
   // Count all items from a paginated endpoint by iterating pages until fewer than pageSize are returned
-  const countAllFromEndpoint = async (path, baseParams = {}, pageSize = 100) => {
-    let page = 1
+  const countAllFromEndpoint = async (path, baseParams = {}) => {
+
     let total = 0
-    const maxPages = 1000 // safety cap
+    
     try {
-      while (page <= maxPages) {
+     
         const resp = await axios.get(`${backendUrl}${path}`, {
           headers: { Authorization: `Bearer ${token}` },
-          params: { page, pageSize, ...baseParams },
+          params: { ...baseParams },
         })
-        const list = resp?.data?.responseBody?.data
-        if (!Array.isArray(list)) break
-        total += list.length
-        if (list.length < pageSize) break
-        page += 1
+        total = resp?.data?.responseBody?.data
+      
       }
-    } catch (err) {
+     catch (err) {
       console.error(`Error counting ${path}:`, err?.response?.data || err)
       throw err
     }
@@ -63,107 +60,90 @@ const Dashboard = ({ token }) => {
   }
 
   // Fetch dashboard data
-  const fetchDashboardData = async () => {
-    setLoading(true)
-    try {
-      // Fetch totals from new paginated APIs
-      const [totalProducts, totalOrders] = await Promise.all([
-        countAllFromEndpoint('/api/Products', { isActive: true, includeDeleted: false }, 200),
-        countAllFromEndpoint('/api/Order', {}, 200),
-      ])
-      setStats((prev) => ({ ...prev, totalProducts, totalOrders }))
+const fetchDashboardData = async () => {
+  setLoading(true)
+  try {
 
-      // Fetch a page of orders from the new API (for recent + popularity)
-      const ordersListResp = await axios.get(`${backendUrl}/api/Order`, {
-        headers: { Authorization: `Bearer ${token}` },
-        params: { page: 1, pageSize: 50 },
-      })
-      const ordersList = Array.isArray(ordersListResp?.data?.responseBody?.data)
-        ? ordersListResp.data.responseBody.data
-        : []
+    const [totalProducts, totalOrders, pendingOrders, revenueResp] = await Promise.all([
+  countAllFromEndpoint('/api/Products/Count', { isActive: true, isDelete: false, inStock: true }),
+  countAllFromEndpoint('/api/Order/Count', {}),
+  countAllFromEndpoint('/api/Order/Count', { status: 1 }),
+  axios.get(`${backendUrl}/api/Order/revenue`, {
+    headers: { Authorization: `Bearer ${token}` },
+    params: {}
+  })
+])
 
-      // Recent Orders: last 5 by createdAt
-      const recent = [...ordersList]
-        .sort((a, b) => new Date(b.createdAt || b.date) - new Date(a.createdAt || a.date))
-        .slice(0, 5)
-        .map((o) => ({
-          id: o.id,
-          orderNumber: o.orderNumber,
-          customerName: o.customerName,
-          total: o.total,
-          createdAt: o.createdAt,
-          status: o.status,
-        }))
-      setRecentOrders(recent)
 
-      // Popular Products: aggregate from detailed items of these orders (fetch details)
-      const details = await Promise.all(
-        ordersList.map(async (o) => {
-          try {
-            const detailResp = await axios.get(`${backendUrl}/api/Order/${encodeURIComponent(o.id)}`, {
-              headers: { Authorization: `Bearer ${token}` },
-            })
-            return detailResp?.data?.responseBody?.data
-          } catch (e) {
-            return null
-          }
-        })
-      )
-      const productFrequency = {}
-      details.filter(Boolean).forEach((d) => {
-        const items = Array.isArray(d?.items) ? d.items : []
-        items.forEach((it) => {
-          const pid = it?.product?.id || it?.productId
-          const qty = Number(it?.quantity || 0)
-          if (!pid) return
-          productFrequency[pid] = (productFrequency[pid] || 0) + qty
-        })
-      })
+    const totalProductsVal = totalProducts
+    const totalOrdersVal = totalOrders
+    const pendingOrdersval=pendingOrders
+    const totalRevenueVal = revenueResp.data?.responseBody?.data ?? 0
 
-      // Fetch products to map names/images
-      const productsResp = await axios.get(`${backendUrl}/api/Products`, {
-        headers: { Authorization: `Bearer ${token}` },
-        params: { page: 1, pageSize: 500, isActive: true, includeDeleted: false },
-      })
-      const productsList = Array.isArray(productsResp?.data?.responseBody?.data)
-        ? productsResp.data.responseBody.data
-        : []
-      const byId = new Map(productsList.map((p) => [String(p.id), p]))
+    setStats(prev => ({
+      ...prev,
+      totalProducts: totalProductsVal,
+      totalOrders: totalOrdersVal,
+      totalRevenue: totalRevenueVal,
+      pendingOrders:pendingOrdersval
+    }))
 
-      const popular = Object.entries(productFrequency)
-        .map(([id, soldCount]) => {
-          const p = byId.get(String(id))
-          return p
-            ? {
-                id: p.id,
-                name: p.name,
-                soldCount: Number(soldCount) || 0,
-                price: p.price,
-                image: Array.isArray(p.images) && p.images[0]?.url ? p.images[0].url : null,
-              }
-            : null
-        })
-        .filter(Boolean)
-        .sort((a, b) => b.soldCount - a.soldCount)
-        .slice(0, 5)
-      setPopularProducts(popular)
+    const ordersListResp = await axios.get(`${backendUrl}/api/Order`, {
+      headers: { Authorization: `Bearer ${token}` },
+      params: { page: 1, pageSize: 50 }
+    })
+    const ordersList = Array.isArray(ordersListResp?.data?.responseBody?.data)
+      ? ordersListResp.data.responseBody.data
+      : []
 
-      // Calculate stats
-      const totalRevenue = ordersList.reduce((sum, order) => sum + (order.total || 0), 0)
-      setStats((prev) => ({ ...prev, totalRevenue }))
-    } catch (err) {
-      console.error('Dashboard load error:', err?.response?.data || err)
-      toast.error('Failed to load dashboard data')
-    } finally {
-      setLoading(false)
-    }
+    const recent = [...ordersList]
+      .sort((a, b) => new Date(b.createdAt || b.date) - new Date(a.createdAt || a.date))
+      .slice(0, 5)
+      .map(o => ({
+        id: o.id,
+        orderNumber: o.orderNumber,
+        customerName: o.customerName,
+        total: o.total,
+        createdAt: o.createdAt,
+        status: o.status
+      }))
+    setRecentOrders(recent)
+
+    const bestSellersResp = await axios.get(`${backendUrl}/api/Products/bestsellers`, {
+      headers: { Authorization: `Bearer ${token}` },
+      params: { page: 1, pageSize: 10, isActive: null, includeDeleted: null }
+    })
+    const bestSellers = Array.isArray(bestSellersResp.data?.responseBody?.data)
+      ? bestSellersResp.data.responseBody.data
+      : []
+    const popular = bestSellers.map(p => {
+      const mainImage = (Array.isArray(p.images) && p.images.find(img => img.isMain)) ||
+                        (Array.isArray(p.images) && p.images[0]) ||
+                        {}
+      return {
+        id: p.id,
+        name: p.name,
+        soldCount: p.totalSold ?? 0, 
+        price: p.finalPrice ?? p.price,
+        image: mainImage.url || null
+      }
+    })
+    setPopularProducts(popular)
+
+  } catch (err) {
+    console.error('Dashboard load error:', err?.response?.data || err)
+    toast.error('Failed to load dashboard data')
+  } finally {
+    setLoading(false)
   }
+}
 
-  useEffect(() => {
-    if (token) {
-      fetchDashboardData()
-    }
-  }, [token])
+
+useEffect(() => {
+  if (token) {
+    fetchDashboardData()
+  }
+}, [token])
 
   return (
     <div className="dashboard">

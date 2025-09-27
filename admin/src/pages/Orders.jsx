@@ -63,12 +63,17 @@ const Orders = ({ token }) => {
   // Helper function to normalize order data from API response
   const normalizeOrderData = (d) => {
     const paymentStatusMap = {
-      1: 'Pending',
-      2: 'Completed',
-      3: 'Failed',
-      4: 'Cancelled',
-      5: 'Refunded',
-      6: 'Cash on Delivery'
+ 0: 'PendingPayment',
+    1: 'Confirmed',
+    2: 'Processing',
+    3: 'Shipped',
+    4: 'Delivered',
+    5: 'CancelledByUser',
+    6: 'Refunded',
+    7: 'Returned',
+    8: 'PaymentExpired',
+    9: 'CancelledByAdmin',
+    10: 'Complete',
     };
     
     return {
