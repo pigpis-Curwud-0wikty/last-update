@@ -58,11 +58,13 @@ const CollectionManager = ({ token }) => {
     }
   };
 
+  // 🔹 جلب الـ collections عند توفر التوكن
   useEffect(() => {
     if (!token) {
       toast.error("Please login again.");
       return;
     }
+    fetchCollections();
   }, [token]);
 
   // Update state when URL parameters change (respond every time, not just once)
@@ -115,24 +117,38 @@ const CollectionManager = ({ token }) => {
     navigate(`/collection/edit/${id}`);
   };
 
+  // 🔹 دالة لإعادة ضبط الحقول عند الخروج من وضع التعديل
+  const resetFormStates = () => {
+    setName("");
+    setDescription("");
+    setDisplayOrder(1);
+    setImages([]);
+    setMainImage(null);
+  };
+
   return (
     <div className="container mx-auto p-4">
       <h1 className="text-2xl font-bold mb-6">Collection Management</h1>
 
-      <div className="mb-6 flex space-x-4">     
+      <div className="mb-6 flex space-x-4">
         <button
-          className={`px-4 py-2 rounded ${activeTab === "add" ? "bg-blue-500 text-white" : "bg-gray-200"}`}
+          className={`px-4 py-2 rounded ${
+            activeTab === "add" ? "bg-blue-500 text-white" : "bg-gray-200"
+          }`}
           onClick={() => {
             setActiveTab("add");
             setEditMode(false);
             setEditCollectionId(null);
+            resetFormStates(); // ✅ إعادة ضبط البيانات عند الانتقال لـ Add
             navigate("/collection-manager");
           }}
         >
           {editMode ? "Edit Collection" : "Add Collection"}
         </button>
         <button
-          className={`px-4 py-2 rounded ${activeTab === "view" ? "bg-blue-500 text-white" : "bg-gray-200"}`}
+          className={`px-4 py-2 rounded ${
+            activeTab === "view" ? "bg-blue-500 text-white" : "bg-gray-200"
+          }`}
           onClick={() => {
             setActiveTab("view");
             navigate("/collection-manager");
@@ -141,7 +157,11 @@ const CollectionManager = ({ token }) => {
           View Collection
         </button>
         <button
-          className={`px-4 py-2 rounded ${activeTab === "collection-list" ? "bg-blue-500 text-white" : "bg-gray-200"}`}
+          className={`px-4 py-2 rounded ${
+            activeTab === "collection-list"
+              ? "bg-blue-500 text-white"
+              : "bg-gray-200"
+          }`}
           onClick={() => {
             setActiveTab("collection-list");
             navigate("/collection-manager");
@@ -184,4 +204,4 @@ const CollectionManager = ({ token }) => {
   );
 };
 
-export default CollectionManager; 
+export default CollectionManager;
