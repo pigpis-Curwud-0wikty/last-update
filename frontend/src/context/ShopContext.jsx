@@ -4,6 +4,11 @@ import { toast } from "react-toastify";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { fetchWithTokenRefresh, getAuthHeaders } from "../utils/apiUtils";
+<<<<<<< HEAD
+=======
+import wishlistService from "../services/wishlistService";
+import discountService from "../services/discountService";
+>>>>>>> f928bb6 (last update)
 export const ShopContext = createContext();
 
 const ShopContextProvider = (props) => {
@@ -28,6 +33,13 @@ const ShopContextProvider = (props) => {
     return storedUser ? JSON.parse(storedUser) : null;
   });
 
+<<<<<<< HEAD
+=======
+  // Wishlist state
+  const [wishlistItems, setWishlistItems] = useState([]);
+  const [wishlistLoading, setWishlistLoading] = useState(false);
+
+>>>>>>> f928bb6 (last update)
   const refreshToken = async () => {
     try {
       const refreshTokenValue = localStorage.getItem("refreshToken");
@@ -292,6 +304,7 @@ const ShopContextProvider = (props) => {
 
   const getProducts = async () => {
     try {
+<<<<<<< HEAD
       const res = await fetch(`${backendUrl}/api/Products?page=1&pageSize=100`);
       const data = await res.json();
       const list = data?.responseBody?.data || [];
@@ -320,6 +333,158 @@ const ShopContextProvider = (props) => {
     } catch (error) {
       console.log(error);
       toast.error("Failed to load products");
+=======
+      // First, get all products using the discount service
+      const productsResult = await discountService.getAllProducts(1, 100, refreshToken);
+      
+      if (!productsResult.success) {
+        throw new Error(productsResult.error);
+      }
+
+      const allProducts = productsResult.data;
+      console.log('ShopContext - All products from discount service:', allProducts);
+
+      // Get discount information for each product using the same logic as TypeProduct.jsx
+      const productsWithDiscounts = await Promise.all(
+        allProducts.map(async (product) => {
+          try {
+            const discountResult = await discountService.getProductDetails(product.id, refreshToken);
+            
+            if (discountResult.success && discountResult.data) {
+              const productData = discountResult.data;
+              const discount = productData.discount;
+              
+              if (discount && discount.isActive) {
+                const originalPrice = productData.price || 0;
+                const finalPrice = productData.finalPrice || originalPrice;
+                const discountPercentage = discount.discountPercent || 0;
+                
+                return {
+                  _id: String(productData.id),
+                  name: productData.name,
+                  description: productData.description,
+                  price: originalPrice,
+                  finalPrice: finalPrice,
+                  discountPercentage: discountPercentage,
+                  discountPrecentage: discountPercentage, // API field name
+                  discountName: discount.name,
+                  discountDescription: discount.description,
+                  startDate: discount.startDate,
+                  endDate: discount.endDate,
+                  image: Array.isArray(productData.images)
+                    ? productData.images
+                      .map((img) => img.url || img.imageUrl || img.Url)
+                      .filter(Boolean)
+                    : productData.mainImageUrl
+                      ? [productData.mainImageUrl]
+                      : [],
+                  isActive: productData.isActive,
+                  currency: currency,
+                  category: productData.categoryName || productData.category?.name,
+                  subCategory: productData.subCategoryName || productData.subCategory?.name,
+                  sizes: (productData.variants || []).map((v) => v.size).filter(Boolean),
+                };
+              }
+            }
+            
+            // Fallback to basic discount calculation if no discount API data
+            const originalPrice = product.price || 0;
+            const finalPrice = product.finalPrice || originalPrice;
+            const discountPercentage = originalPrice > 0 && finalPrice < originalPrice 
+              ? Math.round(((originalPrice - finalPrice) / originalPrice) * 100)
+              : 0;
+            
+            return {
+              _id: String(product.id),
+              name: product.name,
+              description: product.description,
+              price: originalPrice,
+              finalPrice: finalPrice,
+              discountPercentage: discountPercentage,
+              discountPrecentage: discountPercentage, // API field name
+              discountName: product.discountName || null,
+              image: Array.isArray(product.images)
+                ? product.images
+                  .map((img) => img.url || img.imageUrl || img.Url)
+                  .filter(Boolean)
+                : product.mainImageUrl
+                  ? [product.mainImageUrl]
+                  : [],
+              isActive: product.isActive,
+              currency: currency,
+              category: product.categoryName || product.category?.name,
+              subCategory: product.subCategoryName || product.subCategory?.name,
+              sizes: (product.variants || []).map((v) => v.size).filter(Boolean),
+            };
+          } catch (error) {
+            console.error(`Error fetching discount for product ${product.id}:`, error);
+            // Return basic product data if discount fetch fails
+            return {
+              _id: String(product.id),
+              name: product.name,
+              description: product.description,
+              price: product.price || 0,
+              finalPrice: product.finalPrice || product.price || 0,
+              discountPercentage: 0,
+              discountPrecentage: 0,
+              discountName: null,
+              image: Array.isArray(product.images)
+                ? product.images
+                  .map((img) => img.url || img.imageUrl || img.Url)
+                  .filter(Boolean)
+                : product.mainImageUrl
+                  ? [product.mainImageUrl]
+                  : [],
+              isActive: product.isActive,
+              currency: currency,
+              category: product.categoryName || product.category?.name,
+              subCategory: product.subCategoryName || product.subCategory?.name,
+              sizes: (product.variants || []).map((v) => v.size).filter(Boolean),
+            };
+          }
+        })
+      );
+
+      console.log('ShopContext - Products with discount data:', productsWithDiscounts);
+      setProducts(productsWithDiscounts);
+    } catch (error) {
+      console.error('Error fetching products with discounts:', error);
+      toast.error("Failed to load products");
+      
+      // Fallback to basic API call if discount service fails
+      try {
+        const res = await fetch(`${backendUrl}/api/Products?page=1&pageSize=100`);
+        const data = await res.json();
+        const list = data?.responseBody?.data || [];
+        
+        const transformed = list.map((p) => ({
+          _id: String(p.id),
+          name: p.name,
+          description: p.description,
+          price: p.price,
+          finalPrice: p.finalPrice,
+          discountPrecentage: p.discountPrecentage || 0,
+          discountName: p.discountName || null,
+          image: Array.isArray(p.images)
+            ? p.images
+              .map((img) => img.url || img.imageUrl || img.Url)
+              .filter(Boolean)
+            : p.mainImageUrl
+              ? [p.mainImageUrl]
+              : [],
+          isActive: p.isActive,
+          currency: currency,
+          category: p.categoryName || p.category?.name,
+          subCategory: p.subCategoryName || p.subCategory?.name,
+          sizes: (p.variants || []).map((v) => v.size).filter(Boolean),
+        }));
+        
+        setProducts(transformed);
+      } catch (fallbackError) {
+        console.error('Fallback API call also failed:', fallbackError);
+        toast.error("Failed to load products");
+      }
+>>>>>>> f928bb6 (last update)
     }
   };
 
@@ -398,9 +563,17 @@ const ShopContextProvider = (props) => {
     if (token) {
       console.log("Token available, fetching user cart...");
       fetchUserCart();
+<<<<<<< HEAD
     } else {
       console.log("No token, clearing cart");
       setCartItems({});
+=======
+      fetchWishlist();
+    } else {
+      console.log("No token, clearing cart and wishlist");
+      setCartItems({});
+      setWishlistItems([]);
+>>>>>>> f928bb6 (last update)
     }
   }, [token]);
 
@@ -440,6 +613,134 @@ const ShopContextProvider = (props) => {
     localStorage.removeItem("cartItems");
   };
 
+<<<<<<< HEAD
+=======
+  // Wishlist functions
+  const addToWishlist = async (productId) => {
+    if (!token) {
+      toast.error("Please log in to add items to wishlist");
+      return false;
+    }
+
+    setWishlistLoading(true);
+    try {
+      const result = await wishlistService.addToWishlist(productId, refreshToken);
+      
+      if (result.success) {
+        toast.success(result.message);
+        // Refresh wishlist to get updated data
+        await fetchWishlist();
+        return true;
+      } else {
+        toast.error(result.error);
+        return false;
+      }
+    } catch (error) {
+      console.error("Error adding to wishlist:", error);
+      toast.error("Error adding product to wishlist");
+      return false;
+    } finally {
+      setWishlistLoading(false);
+    }
+  };
+
+  const removeFromWishlist = async (productId) => {
+    if (!token) {
+      toast.error("Please log in to manage wishlist");
+      return false;
+    }
+
+    setWishlistLoading(true);
+    try {
+      const result = await wishlistService.removeFromWishlist(productId, refreshToken);
+      
+      if (result.success) {
+        toast.success(result.message);
+        // Refresh wishlist to get updated data
+        await fetchWishlist();
+        return true;
+      } else {
+        toast.error(result.error);
+        return false;
+      }
+    } catch (error) {
+      console.error("Error removing from wishlist:", error);
+      toast.error("Error removing product from wishlist");
+      return false;
+    } finally {
+      setWishlistLoading(false);
+    }
+  };
+
+  const fetchWishlist = async () => {
+    if (!token) {
+      setWishlistItems([]);
+      return;
+    }
+
+    setWishlistLoading(true);
+    try {
+      const result = await wishlistService.getWishlist(1, 100, refreshToken);
+      
+      if (result.success) {
+        console.log("Wishlist data received:", result.data);
+        setWishlistItems(result.data || []);
+      } else {
+        console.error("Error fetching wishlist:", result.error);
+        setWishlistItems([]);
+      }
+    } catch (error) {
+      console.error("Error fetching wishlist:", error);
+      setWishlistItems([]);
+    } finally {
+      setWishlistLoading(false);
+    }
+  };
+
+  const isInWishlist = async (productId) => {
+    if (!token) return false;
+
+    try {
+      const result = await wishlistService.isInWishlist(productId, refreshToken);
+      return result.success ? result.data : false;
+    } catch (error) {
+      console.error("Error checking wishlist status:", error);
+      return false;
+    }
+  };
+
+  const clearWishlist = async () => {
+    if (!token) {
+      toast.error("Please log in to manage wishlist");
+      return false;
+    }
+
+    setWishlistLoading(true);
+    try {
+      const result = await wishlistService.clearWishlist(refreshToken);
+      
+      if (result.success) {
+        toast.success(result.message);
+        setWishlistItems([]);
+        return true;
+      } else {
+        toast.error(result.error);
+        return false;
+      }
+    } catch (error) {
+      console.error("Error clearing wishlist:", error);
+      toast.error("Error clearing wishlist");
+      return false;
+    } finally {
+      setWishlistLoading(false);
+    }
+  };
+
+  const getWishlistCount = () => {
+    return wishlistItems.length;
+  };
+
+>>>>>>> f928bb6 (last update)
   const checkout = async () => {
     if (token) {
       try {
@@ -505,7 +806,20 @@ const ShopContextProvider = (props) => {
     user,
     setUser,
     clearLocalStorageCart,
+<<<<<<< HEAD
     fetchUserCart
+=======
+    fetchUserCart,
+    // Wishlist functions
+    wishlistItems,
+    wishlistLoading,
+    addToWishlist,
+    removeFromWishlist,
+    fetchWishlist,
+    isInWishlist,
+    clearWishlist,
+    getWishlistCount
+>>>>>>> f928bb6 (last update)
   };
 
   return (

@@ -32,6 +32,11 @@ const RelatedProducts = ({ category, subCategory }) => {
                                 name={item.name}
                                 price={item.price}
                                 finalPrice={item.finalPrice}
+<<<<<<< HEAD
+=======
+                                discountPrecentage={item.discountPrecentage}
+                                discountName={item.discountName}
+>>>>>>> f928bb6 (last update)
                             />
                         )
                     })

@@ -186,7 +186,14 @@ const PageCollection = () => {
               id={product._id}
               name={product.name}
               price={product.price}
+<<<<<<< HEAD
               image={product.image}
+=======
+              finalPrice={product.finalPrice}
+              image={product.image}
+              discountPrecentage={product.discountPrecentage}
+              discountName={product.discountName}
+>>>>>>> f928bb6 (last update)
             />
           ))
         ) : (

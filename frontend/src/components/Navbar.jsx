@@ -13,6 +13,10 @@ const Navbar = () => {
   const context = useContext(ShopContext);
   const setShowSearch = context?.setShowSearch;
   const getCartCount = context?.getCartCount;
+<<<<<<< HEAD
+=======
+  const getWishlistCount = context?.getWishlistCount;
+>>>>>>> f928bb6 (last update)
   const [scrolled, setScrolled] = useState(false);
   const { t, i18n } = useTranslation();
   const [hovered, setHovered] = useState(false);
@@ -269,6 +273,31 @@ const Navbar = () => {
             alt=""
           />
 
+<<<<<<< HEAD
+=======
+          {/* Wishlist */}
+          <Link to="/wishlist" className="relative">
+            <svg
+              className="w-5 h-5"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"
+              />
+            </svg>
+            {getWishlistCount() > 0 && (
+              <p className="absolute right-[-5px] bottom-[-5px] w-4 text-center leading-4 bg-red-500 text-white aspect-square rounded-full text-[8px]">
+                {getWishlistCount()}
+              </p>
+            )}
+          </Link>
+
+>>>>>>> f928bb6 (last update)
           {/* قائمة البروفايل */}
           <div className="relative z-50" ref={profileRef}>
             {user ? (
@@ -402,6 +431,16 @@ const Navbar = () => {
             >
               {t("POLICY")}
             </NavLink>
+<<<<<<< HEAD
+=======
+            <NavLink
+              onClick={() => setvisible(false)}
+              to="/wishlist"
+              className="py-2 pl-6 border-b-2"
+            >
+              {t("WISHLIST")}
+            </NavLink>
+>>>>>>> f928bb6 (last update)
           </div>
         </div>
       </motion.div>

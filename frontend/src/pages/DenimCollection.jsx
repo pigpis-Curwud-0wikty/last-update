@@ -182,6 +182,11 @@ const DenimCollection = () => {
               price={product.price}
               finalPrice={product.finalPrice}
               image={product.image}
+<<<<<<< HEAD
+=======
+              discountPrecentage={product.discountPrecentage}
+              discountName={product.discountName}
+>>>>>>> f928bb6 (last update)
             />
           ))
         ) : (

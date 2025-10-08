@@ -31,6 +31,10 @@ import SubcategoryPage from "./pages/SubcategoryPage";
 import CollectionProducts from "./pages/CollectionProducts";
 import RequestPasswordReset from "./pages/RequestPasswordReset";  
 import ScrollToTopButton from "./components/ScrollToTopButton";
+<<<<<<< HEAD
+=======
+import Wishlist from "./pages/Wishlist";
+>>>>>>> f928bb6 (last update)
 import { ShopContext } from "./context/ShopContext";
 
 // Component to scroll to top on route change
@@ -105,6 +109,10 @@ const App = () => {
           <Route path="/category/:categoryId" element={<CategoryPage />} />
           <Route path="/subcategory/:subcategoryId" element={<SubcategoryPage />} />
           <Route path="/collection-products/:collectionId" element={<CollectionProducts />} />
+<<<<<<< HEAD
+=======
+          <Route path="/wishlist" element={<Wishlist />} />
+>>>>>>> f928bb6 (last update)
         </Routes>
         <Footer />
         <ScrollToTopButton />

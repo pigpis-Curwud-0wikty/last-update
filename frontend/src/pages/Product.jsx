@@ -12,6 +12,10 @@ import HeroBanner from "../components/HeroBanner";
 import axios from "axios";
 import { Link } from "react-router-dom";
 import { toast } from "react-toastify";
+<<<<<<< HEAD
+=======
+import WishlistButton from "../components/WishlistButton";
+>>>>>>> f928bb6 (last update)
 
 const Product = () => {
   const { t } = useTranslation();
@@ -363,10 +367,25 @@ const Product = () => {
             {productData.brand} <p>R&S</p>
           </div>
 
+<<<<<<< HEAD
           {/* Product Name */}
           <h1 className="text-2xl font-light uppercase">
             {productData.name}
           </h1>
+=======
+          {/* Product Name with Wishlist Button */}
+          <div className="flex items-center justify-between">
+            <h1 className="text-2xl font-light uppercase flex-1">
+              {productData.name}
+            </h1>
+            <WishlistButton 
+              productId={productData._id} 
+              size="default"
+              variant="minimal"
+              showText={true}
+            />
+          </div>
+>>>>>>> f928bb6 (last update)
 
           {/* Price */}
           <div className="mt-3 mb-4">
