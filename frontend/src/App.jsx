@@ -31,6 +31,7 @@ import CollectionProducts from "./pages/CollectionProducts";
 import RequestPasswordReset from "./pages/RequestPasswordReset";
 import ScrollToTopButton from "./components/ScrollToTopButton";
 import Wishlist from "./pages/Wishlist";
+import Erroe404 from "./pages/Erroe404";
 import { ShopContext } from "./context/ShopContext";
 
 // Component to scroll to top on route change
@@ -83,6 +84,7 @@ const App = () => {
         <SearchBar />
         <Routes>
           <Route path="/" element={<Home />} />
+          <Route path="/error" element={<Erroe404 />} />
           <Route path="/collection" element={<CollectionProducts />} />
           <Route path="/about" element={<About />} />
           <Route path="/cart" element={<Cart />} />
@@ -113,6 +115,7 @@ const App = () => {
             element={<CollectionProducts />}
           />
           <Route path="/wishlist" element={<Wishlist />} />
+          <Route path="*" element={<Erroe404 />} />
         </Routes>
         <Footer />
         <ScrollToTopButton />

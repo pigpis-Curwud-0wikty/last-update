@@ -484,6 +484,10 @@ const ShopContextProvider = (props) => {
       } catch (backupError) {
         console.error("Backup discount service also failed:", backupError);
         toast.error("Failed to load products from all sources.");
+        // Navigate to error page when all sources fail
+        try {
+          navigate('/error', { replace: true });
+        } catch {}
       }
     }
   };
