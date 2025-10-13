@@ -943,74 +943,74 @@ const API = {
     },
   },
   // Order APIs
-  orders: {
-    // Create a new order
-    create: async (orderData, token) => {
-      try {
-        const response = await axios.post(
-          `${backendUrl}/api/Order`,
-          orderData,
-          { 
-            headers: { 
-              Authorization: `Bearer ${token}`,
-              "Content-Type": "application/json",
-              Accept: "text/plain"
-            } 
-          }
-        );
-        return response.data;
-      } catch (error) {
-        logApiError(error, "creating order");
-        throw error;
-      }
-    },
+  // orders: {
+  //   // Create a new order
+  //   create: async (orderData, token) => {
+  //     try {
+  //       const response = await axios.post(
+  //         `${backendUrl}/api/Order`,
+  //         orderData,
+  //         { 
+  //           headers: { 
+  //             Authorization: `Bearer ${token}`,
+  //             "Content-Type": "application/json",
+  //             Accept: "text/plain"
+  //           } 
+  //         }
+  //       );
+  //       return response.data;
+  //     } catch (error) {
+  //       logApiError(error, "creating order");
+  //       throw error;
+  //     }
+  //   },
 
-    // Get all orders with optional filters
-    list: async (params, token) => {
-      try {
-        const response = await axios.get(
-          `${backendUrl}/api/Order`,
-          { 
-            headers: { Authorization: `Bearer ${token}` },
-            params: params
-          }
-        );
-        return response.data;
-      } catch (error) {
-        logApiError(error, "fetching orders");
-        throw error;
-      }
-    },
+  //   // Get all orders with optional filters
+  //   list: async (params, token) => {
+  //     try {
+  //       const response = await axios.get(
+  //         `${backendUrl}/api/Order`,
+  //         { 
+  //           headers: { Authorization: `Bearer ${token}` },
+  //           params: params
+  //         }
+  //       );
+  //       return response.data;
+  //     } catch (error) {
+  //       logApiError(error, "fetching orders");
+  //       throw error;
+  //     }
+  //   },
 
-    // Get order by ID
-    getById: async (orderId, token) => {
-      try {
-        const response = await axios.get(
-          `${backendUrl}/api/Order/${orderId}`,
-          { headers: { Authorization: `Bearer ${token}` } }
-        );
-        return response.data;
-      } catch (error) {
-        logApiError(error, "fetching order details");
-        throw error;
-      }
-    },
+  //   // Get order by ID
+  //   getById: async (orderId, token) => {
+  //     try {
+  //       const response = await axios.get(
+  //         `${backendUrl}/api/Order/${orderId}`,
+  //         { headers: { Authorization: `Bearer ${token}` } }
+  //       );
+  //       return response.data;
+  //     } catch (error) {
+  //       logApiError(error, "fetching order details");
+  //       throw error;
+  //     }
+  //   },
 
-    // Update order status
-    updateStatus: async (orderId, status, token) => {
-      try {
-        const response = await axios.patch(
-          `${backendUrl}/api/Order/${orderId}/status`,
-          { status },
-          { headers: { Authorization: `Bearer ${token}` } }
-        );
-        return response.data;
-      } catch (error) {
-        logApiError(error, "updating order status");
-        throw error;
-      }
-    }
-  },
+  //   // Update order status
+  //   updateStatus: async (orderId, status, token) => {
+  //     try {
+  //       const response = await axios.patch(
+  //         `${backendUrl}/api/Order/${orderId}/status`,
+  //         { status },
+  //         { headers: { Authorization: `Bearer ${token}` } }
+  //       );
+  //       return response.data;
+  //     } catch (error) {
+  //       logApiError(error, "updating order status");
+  //       throw error;
+  //     }
+  //   }
+  // },
 };
 
 export default API;

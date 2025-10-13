@@ -13,12 +13,9 @@ const Navbar = () => {
   const context = useContext(ShopContext);
   const setShowSearch = context?.setShowSearch;
   const getCartCount = context?.getCartCount;
-<<<<<<< HEAD
-=======
   const getWishlistCount = context?.getWishlistCount;
->>>>>>> f928bb6 (last update)
   const [scrolled, setScrolled] = useState(false);
-  const { t, i18n } = useTranslation();
+  const { t } = useTranslation();
   const [hovered, setHovered] = useState(false);
   const [hoveredCategoryId, setHoveredCategoryId] = useState(null);
 
@@ -60,9 +57,9 @@ const Navbar = () => {
     navigate("/login");
   };
 
-  const toggleLanguage = () => {
-    i18n.changeLanguage(i18n.language === "en" ? "ar" : "en");
-  };
+  // const toggleLanguage = () => {
+  //   i18n.changeLanguage(i18n.language === "en" ? "ar" : "en");
+  // };
 
   const [categories, setCategories] = useState([]);
   const [categorySubcategories, setCategorySubcategories] = useState({});
@@ -102,14 +99,20 @@ const Navbar = () => {
           // Get subcategories from category detail response
           if (categoryData.responseBody?.data?.subCategories) {
             return {
-              [category.id]: categoryData.responseBody.data.subCategories.filter(sub => sub.isActive),
+              [category.id]:
+                categoryData.responseBody.data.subCategories.filter(
+                  (sub) => sub.isActive
+                ),
             };
           }
           return { [category.id]: [] };
         });
 
         const subcategories = await Promise.all(promises);
-        const mergedSubcategories = subcategories.reduce((acc, curr) => ({ ...acc, ...curr }), {});
+        const mergedSubcategories = subcategories.reduce(
+          (acc, curr) => ({ ...acc, ...curr }),
+          {}
+        );
 
         setCategorySubcategories(mergedSubcategories);
       } catch (err) {
@@ -207,7 +210,9 @@ const Navbar = () => {
                         categorySubcategories[cat.id].length > 0 && (
                           <ul
                             className={`absolute left-full top-0 w-64 bg-white shadow-lg transition-all duration-200 z-50 ${
-                              hoveredCategoryId === cat.id ? "opacity-100 visible" : "opacity-0 invisible"
+                              hoveredCategoryId === cat.id
+                                ? "opacity-100 visible"
+                                : "opacity-0 invisible"
                             }`}
                           >
                             {categorySubcategories[cat.id].map((sub) => (
@@ -273,8 +278,6 @@ const Navbar = () => {
             alt=""
           />
 
-<<<<<<< HEAD
-=======
           {/* Wishlist */}
           <Link to="/wishlist" className="relative">
             <svg
@@ -297,7 +300,6 @@ const Navbar = () => {
             )}
           </Link>
 
->>>>>>> f928bb6 (last update)
           {/* قائمة البروفايل */}
           <div className="relative z-50" ref={profileRef}>
             {user ? (
@@ -431,8 +433,6 @@ const Navbar = () => {
             >
               {t("POLICY")}
             </NavLink>
-<<<<<<< HEAD
-=======
             <NavLink
               onClick={() => setvisible(false)}
               to="/wishlist"
@@ -440,7 +440,6 @@ const Navbar = () => {
             >
               {t("WISHLIST")}
             </NavLink>
->>>>>>> f928bb6 (last update)
           </div>
         </div>
       </motion.div>

@@ -72,7 +72,7 @@ const Home = () => {
         variants={itemVariants}>
         {/* HeroBanner full width */}
         <div className="w-screen relative left-1/2 right-1/2 -mx-[50vw]">
-          <HeroBanner collectionId={3} />
+          <HeroBanner collectionId={1} />
         </div>
       </motion.div>
       <motion.div

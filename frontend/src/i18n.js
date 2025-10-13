@@ -93,8 +93,6 @@ const resources = {
       GET_IN_TOUCH: 'GET IN TOUCH',
       COPYRIGHT: 'Copyright 2024@ greatstack.dev - All Right Reserved.',
       HERO_IMAGE_TITLE: 'Discover the Latest Trends',
-<<<<<<< HEAD
-=======
       WISHLIST: 'Wishlist',
       ADD_TO_WISHLIST: 'Add to Wishlist',
       REMOVE_FROM_WISHLIST: 'Remove from Wishlist',
@@ -127,7 +125,6 @@ const resources = {
       BIG: 'BIG',
       DISCOUNTS: 'DISCOUNTS',
       DISCOVER_BIGGEST_SAVINGS: 'Discover our biggest savings and limited-time offers',
->>>>>>> f928bb6 (last update)
     },
   },
   ar: {
@@ -221,8 +218,6 @@ const resources = {
       GET_IN_TOUCH: 'تواصل معنا',
       COPYRIGHT: 'حقوق النشر 2024@ greatstack.dev - جميع الحقوق محفوظة.',
       HERO_IMAGE_TITLE: 'اكتشف أحدث الصيحات',
-<<<<<<< HEAD
-=======
       WISHLIST: 'قائمة الأمنيات',
       ADD_TO_WISHLIST: 'أضف إلى قائمة الأمنيات',
       REMOVE_FROM_WISHLIST: 'إزالة من قائمة الأمنيات',
@@ -255,7 +250,6 @@ const resources = {
       BIG: 'كبير',
       DISCOUNTS: 'الخصومات',
       DISCOVER_BIGGEST_SAVINGS: 'اكتشف أكبر التوفيرات والعروض المحدودة الوقت',
->>>>>>> f928bb6 (last update)
     },
   },
 };

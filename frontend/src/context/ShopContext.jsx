@@ -2,13 +2,9 @@ import { createContext, useState, useEffect } from "react";
 // import { products } from "../assets/frontend_assets/assets";
 import { toast } from "react-toastify";
 import { useNavigate } from "react-router-dom";
-import axios from "axios";
 import { fetchWithTokenRefresh, getAuthHeaders } from "../utils/apiUtils";
-<<<<<<< HEAD
-=======
 import wishlistService from "../services/wishlistService";
 import discountService from "../services/discountService";
->>>>>>> f928bb6 (last update)
 export const ShopContext = createContext();
 
 const ShopContextProvider = (props) => {
@@ -33,18 +29,15 @@ const ShopContextProvider = (props) => {
     return storedUser ? JSON.parse(storedUser) : null;
   });
 
-<<<<<<< HEAD
-=======
   // Wishlist state
   const [wishlistItems, setWishlistItems] = useState([]);
   const [wishlistLoading, setWishlistLoading] = useState(false);
 
->>>>>>> f928bb6 (last update)
   const refreshToken = async () => {
     try {
       const refreshTokenValue = localStorage.getItem("refreshToken");
       const userData = localStorage.getItem("user");
-      
+
       if (!refreshTokenValue) {
         console.log("No refresh token available");
         return false;
@@ -110,18 +103,25 @@ const ShopContextProvider = (props) => {
       const mapSizeLabelToRange = (label) => {
         const upper = String(label).toUpperCase();
         switch (upper) {
-          case 'S': return { min: 30, max: 32 };
-          case 'M': return { min: 33, max: 35 };
-          case 'L': return { min: 36, max: 38 };
-          case 'XL': return { min: 39, max: 41 };
-          case 'XXL': return { min: 42, max: 44 };
-          default: return null;
+          case "S":
+            return { min: 30, max: 32 };
+          case "M":
+            return { min: 33, max: 35 };
+          case "L":
+            return { min: 36, max: 38 };
+          case "XL":
+            return { min: 39, max: 41 };
+          case "XXL":
+            return { min: 42, max: 44 };
+          default:
+            return null;
         }
       };
 
       // First try exact string match
       let match = variants.find(
-        (v) => String(v.size || "").toLowerCase() === String(sizeLabel).toLowerCase()
+        (v) =>
+          String(v.size || "").toLowerCase() === String(sizeLabel).toLowerCase()
       );
 
       // If no exact match, try numeric range matching
@@ -137,11 +137,18 @@ const ShopContextProvider = (props) => {
 
       // If still no match and we have variants, try to find any variant with available quantity
       if (!match && variants.length > 0) {
-        console.warn(`No variant found for size ${sizeLabel}, trying to use first available variant`);
-        match = variants.find(v => v.quantity > 0) || variants[0];
+        console.warn(
+          `No variant found for size ${sizeLabel}, trying to use first available variant`
+        );
+        match = variants.find((v) => v.quantity > 0) || variants[0];
       }
 
-      console.log('resolveVariantId:', { productId, sizeLabel, variants, match });
+      console.log("resolveVariantId:", {
+        productId,
+        sizeLabel,
+        variants,
+        match,
+      });
       return match?.id || null;
     } catch (e) {
       console.log("resolveVariantId error", e);
@@ -189,7 +196,9 @@ const ShopContextProvider = (props) => {
         const productVariantId = await resolveVariantId(itemId, size);
 
         if (!productVariantId) {
-          toast.error("No variant found for the selected size. Please try a different size.");
+          toast.error(
+            "No variant found for the selected size. Please try a different size."
+          );
           // Revert local cart changes
           setCartItems(cartItems);
           return;
@@ -202,7 +211,7 @@ const ShopContextProvider = (props) => {
             method: "POST",
             headers: {
               ...getAuthHeaders(),
-              'Content-Type': 'application/json-patch+json'
+              "Content-Type": "application/json-patch+json",
             },
             body: JSON.stringify({
               productId: Number(itemId),
@@ -219,9 +228,11 @@ const ShopContextProvider = (props) => {
         if (response.ok && data.responseBody) {
           toast.success(data.responseBody.message || "Product added to cart");
           await fetchUserCart();
-
         } else {
-          const errorMessage = data.responseBody?.message || data.message || "Failed to add product to cart";
+          const errorMessage =
+            data.responseBody?.message ||
+            data.message ||
+            "Failed to add product to cart";
           toast.error(errorMessage);
           console.error("Add to cart error:", data);
           // Revert local cart changes on server error
@@ -291,7 +302,7 @@ const ShopContextProvider = (props) => {
     for (const itemId in cartItems) {
       for (const size in cartItems[itemId]) {
         if (cartItems[itemId][size] > 0) {
-          const product = products.find(p => p._id === itemId);
+          const product = products.find((p) => p._id === itemId);
           if (product && product.finalPrice) {
             amount += product.finalPrice * cartItems[itemId][size];
           }
@@ -301,196 +312,185 @@ const ShopContextProvider = (props) => {
     return amount;
   };
 
-
   const getProducts = async () => {
     try {
-<<<<<<< HEAD
+      // 🟢 Try to get products directly from backend API
       const res = await fetch(`${backendUrl}/api/Products?page=1&pageSize=100`);
       const data = await res.json();
       const list = data?.responseBody?.data || [];
-      // Transform to UI shape expected by the app
+
+      // 🧩 Transform response to match UI shape
       const transformed = list.map((p) => ({
         _id: String(p.id),
         name: p.name,
         description: p.description,
-        price: p.price, // Original price
-        finalPrice: p.finalPrice, // Final/discounted price
+        price: p.price,
+        finalPrice: p.finalPrice,
         image: Array.isArray(p.images)
           ? p.images
-            .map((img) => img.url || img.imageUrl || img.Url)
-            .filter(Boolean)
+              .map((img) => img.url || img.imageUrl || img.Url)
+              .filter(Boolean)
           : p.mainImageUrl
             ? [p.mainImageUrl]
             : [],
         isActive: p.isActive,
         currency: currency,
-        // Best-effort fields to minimize downstream changes
         category: p.categoryName || p.category?.name,
         subCategory: p.subCategoryName || p.subCategory?.name,
         sizes: (p.variants || []).map((v) => v.size).filter(Boolean),
       }));
+
       setProducts(transformed);
     } catch (error) {
-      console.log(error);
-      toast.error("Failed to load products");
-=======
-      // First, get all products using the discount service
-      const productsResult = await discountService.getAllProducts(1, 100, refreshToken);
-      
-      if (!productsResult.success) {
-        throw new Error(productsResult.error);
-      }
+      console.error("Primary API failed:", error);
+      toast.error("Failed to load products from main API, trying backup...");
 
-      const allProducts = productsResult.data;
-      console.log('ShopContext - All products from discount service:', allProducts);
+      try {
+        // 🟡 Fallback: use discountService to load products
+        const productsResult = await discountService.getAllProducts(
+          1,
+          100,
+          refreshToken
+        );
+        if (!productsResult.success) throw new Error(productsResult.error);
 
-      // Get discount information for each product using the same logic as TypeProduct.jsx
-      const productsWithDiscounts = await Promise.all(
-        allProducts.map(async (product) => {
-          try {
-            const discountResult = await discountService.getProductDetails(product.id, refreshToken);
-            
-            if (discountResult.success && discountResult.data) {
-              const productData = discountResult.data;
-              const discount = productData.discount;
-              
-              if (discount && discount.isActive) {
-                const originalPrice = productData.price || 0;
-                const finalPrice = productData.finalPrice || originalPrice;
-                const discountPercentage = discount.discountPercent || 0;
-                
-                return {
-                  _id: String(productData.id),
-                  name: productData.name,
-                  description: productData.description,
-                  price: originalPrice,
-                  finalPrice: finalPrice,
-                  discountPercentage: discountPercentage,
-                  discountPrecentage: discountPercentage, // API field name
-                  discountName: discount.name,
-                  discountDescription: discount.description,
-                  startDate: discount.startDate,
-                  endDate: discount.endDate,
-                  image: Array.isArray(productData.images)
-                    ? productData.images
+        const allProducts = productsResult.data;
+
+        // 🔄 Fetch discount details for each product
+        const productsWithDiscounts = await Promise.all(
+          allProducts.map(async (product) => {
+            try {
+              const discountResult = await discountService.getProductDetails(
+                product.id,
+                refreshToken
+              );
+
+              if (discountResult.success && discountResult.data) {
+                const productData = discountResult.data;
+                const discount = productData.discount;
+
+                if (discount && discount.isActive) {
+                  const originalPrice = productData.price || 0;
+                  const finalPrice = productData.finalPrice || originalPrice;
+                  const discountPercentage = discount.discountPercent || 0;
+
+                  return {
+                    _id: String(productData.id),
+                    name: productData.name,
+                    description: productData.description,
+                    price: originalPrice,
+                    finalPrice,
+                    discountPercentage,
+                    discountPrecentage: discountPercentage, // (legacy)
+                    discountName: discount.name,
+                    discountDescription: discount.description,
+                    startDate: discount.startDate,
+                    endDate: discount.endDate,
+                    image: Array.isArray(productData.images)
+                      ? productData.images
+                          .map((img) => img.url || img.imageUrl || img.Url)
+                          .filter(Boolean)
+                      : productData.mainImageUrl
+                        ? [productData.mainImageUrl]
+                        : [],
+                    isActive: productData.isActive,
+                    currency: currency,
+                    category:
+                      productData.categoryName || productData.category?.name,
+                    subCategory:
+                      productData.subCategoryName ||
+                      productData.subCategory?.name,
+                    sizes: (productData.variants || [])
+                      .map((v) => v.size)
+                      .filter(Boolean),
+                  };
+                }
+              }
+
+              // 🧩 Fallback discount calculation if no API discount data
+              const originalPrice = product.price || 0;
+              const finalPrice = product.finalPrice || originalPrice;
+              const discountPercentage =
+                originalPrice > 0 && finalPrice < originalPrice
+                  ? Math.round(
+                      ((originalPrice - finalPrice) / originalPrice) * 100
+                    )
+                  : 0;
+
+              return {
+                _id: String(product.id),
+                name: product.name,
+                description: product.description,
+                price: originalPrice,
+                finalPrice,
+                discountPercentage,
+                discountPrecentage: discountPercentage,
+                discountName: product.discountName || null,
+                image: Array.isArray(product.images)
+                  ? product.images
                       .map((img) => img.url || img.imageUrl || img.Url)
                       .filter(Boolean)
-                    : productData.mainImageUrl
-                      ? [productData.mainImageUrl]
-                      : [],
-                  isActive: productData.isActive,
-                  currency: currency,
-                  category: productData.categoryName || productData.category?.name,
-                  subCategory: productData.subCategoryName || productData.subCategory?.name,
-                  sizes: (productData.variants || []).map((v) => v.size).filter(Boolean),
-                };
-              }
+                  : product.mainImageUrl
+                    ? [product.mainImageUrl]
+                    : [],
+                isActive: product.isActive,
+                currency: currency,
+                category: product.categoryName || product.category?.name,
+                subCategory:
+                  product.subCategoryName || product.subCategory?.name,
+                sizes: (product.variants || [])
+                  .map((v) => v.size)
+                  .filter(Boolean),
+              };
+            } catch (err) {
+              console.error(
+                `Error fetching discount for product ${product.id}:`,
+                err
+              );
+              return {
+                _id: String(product.id),
+                name: product.name,
+                description: product.description,
+                price: product.price || 0,
+                finalPrice: product.finalPrice || product.price || 0,
+                discountPercentage: 0,
+                discountPrecentage: 0,
+                discountName: null,
+                image: Array.isArray(product.images)
+                  ? product.images
+                      .map((img) => img.url || img.imageUrl || img.Url)
+                      .filter(Boolean)
+                  : product.mainImageUrl
+                    ? [product.mainImageUrl]
+                    : [],
+                isActive: product.isActive,
+                currency: currency,
+                category: product.categoryName || product.category?.name,
+                subCategory:
+                  product.subCategoryName || product.subCategory?.name,
+                sizes: (product.variants || [])
+                  .map((v) => v.size)
+                  .filter(Boolean),
+              };
             }
-            
-            // Fallback to basic discount calculation if no discount API data
-            const originalPrice = product.price || 0;
-            const finalPrice = product.finalPrice || originalPrice;
-            const discountPercentage = originalPrice > 0 && finalPrice < originalPrice 
-              ? Math.round(((originalPrice - finalPrice) / originalPrice) * 100)
-              : 0;
-            
-            return {
-              _id: String(product.id),
-              name: product.name,
-              description: product.description,
-              price: originalPrice,
-              finalPrice: finalPrice,
-              discountPercentage: discountPercentage,
-              discountPrecentage: discountPercentage, // API field name
-              discountName: product.discountName || null,
-              image: Array.isArray(product.images)
-                ? product.images
-                  .map((img) => img.url || img.imageUrl || img.Url)
-                  .filter(Boolean)
-                : product.mainImageUrl
-                  ? [product.mainImageUrl]
-                  : [],
-              isActive: product.isActive,
-              currency: currency,
-              category: product.categoryName || product.category?.name,
-              subCategory: product.subCategoryName || product.subCategory?.name,
-              sizes: (product.variants || []).map((v) => v.size).filter(Boolean),
-            };
-          } catch (error) {
-            console.error(`Error fetching discount for product ${product.id}:`, error);
-            // Return basic product data if discount fetch fails
-            return {
-              _id: String(product.id),
-              name: product.name,
-              description: product.description,
-              price: product.price || 0,
-              finalPrice: product.finalPrice || product.price || 0,
-              discountPercentage: 0,
-              discountPrecentage: 0,
-              discountName: null,
-              image: Array.isArray(product.images)
-                ? product.images
-                  .map((img) => img.url || img.imageUrl || img.Url)
-                  .filter(Boolean)
-                : product.mainImageUrl
-                  ? [product.mainImageUrl]
-                  : [],
-              isActive: product.isActive,
-              currency: currency,
-              category: product.categoryName || product.category?.name,
-              subCategory: product.subCategoryName || product.subCategory?.name,
-              sizes: (product.variants || []).map((v) => v.size).filter(Boolean),
-            };
-          }
-        })
-      );
+          })
+        );
 
-      console.log('ShopContext - Products with discount data:', productsWithDiscounts);
-      setProducts(productsWithDiscounts);
-    } catch (error) {
-      console.error('Error fetching products with discounts:', error);
-      toast.error("Failed to load products");
-      
-      // Fallback to basic API call if discount service fails
-      try {
-        const res = await fetch(`${backendUrl}/api/Products?page=1&pageSize=100`);
-        const data = await res.json();
-        const list = data?.responseBody?.data || [];
-        
-        const transformed = list.map((p) => ({
-          _id: String(p.id),
-          name: p.name,
-          description: p.description,
-          price: p.price,
-          finalPrice: p.finalPrice,
-          discountPrecentage: p.discountPrecentage || 0,
-          discountName: p.discountName || null,
-          image: Array.isArray(p.images)
-            ? p.images
-              .map((img) => img.url || img.imageUrl || img.Url)
-              .filter(Boolean)
-            : p.mainImageUrl
-              ? [p.mainImageUrl]
-              : [],
-          isActive: p.isActive,
-          currency: currency,
-          category: p.categoryName || p.category?.name,
-          subCategory: p.subCategoryName || p.subCategory?.name,
-          sizes: (p.variants || []).map((v) => v.size).filter(Boolean),
-        }));
-        
-        setProducts(transformed);
-      } catch (fallbackError) {
-        console.error('Fallback API call also failed:', fallbackError);
-        toast.error("Failed to load products");
+        console.log(
+          "✅ Products loaded with discount data:",
+          productsWithDiscounts
+        );
+        setProducts(productsWithDiscounts);
+      } catch (backupError) {
+        console.error("Backup discount service also failed:", backupError);
+        toast.error("Failed to load products from all sources.");
       }
->>>>>>> f928bb6 (last update)
     }
   };
 
   const fetchUserCart = async () => {
     if (!token) return;
-    
+
     try {
       console.log("Fetching user cart from server...");
       const response = await fetchWithTokenRefresh(
@@ -505,30 +505,30 @@ const ShopContextProvider = (props) => {
       if (response.ok) {
         const data = await response.json();
         console.log("Cart fetch response:", data);
-        
+
         if (data.responseBody && data.responseBody.data) {
           let serverCartItems = data.responseBody.data;
-          
+
           // Handle different response structures
           if (serverCartItems.items) {
             serverCartItems = serverCartItems.items;
           }
-          
+
           // Ensure we have an array
           if (!Array.isArray(serverCartItems)) {
             console.log("Server cart data is not an array:", serverCartItems);
             setCartItems({});
             return;
           }
-          
+
           // Transform server cart format to local cart format
           const transformedCart = {};
-          serverCartItems.forEach(item => {
+          serverCartItems.forEach((item) => {
             const productId = item.productId || item.product?.id;
-            const size = item.productVariant?.size || item.size || 'default';
-            const color = item.productVariant?.color || item.color || 'default';
+            const size = item.productVariant?.size || item.size || "default";
+            const color = item.productVariant?.color || item.color || "default";
             const quantity = item.quantity || 1;
-            
+
             if (productId) {
               const itemKey = `${size}_${color}`;
               if (!transformedCart[productId]) {
@@ -537,7 +537,7 @@ const ShopContextProvider = (props) => {
               transformedCart[productId][itemKey] = quantity;
             }
           });
-          
+
           console.log("Transformed cart:", transformedCart);
           setCartItems(transformedCart);
         } else {
@@ -563,18 +563,13 @@ const ShopContextProvider = (props) => {
     if (token) {
       console.log("Token available, fetching user cart...");
       fetchUserCart();
-<<<<<<< HEAD
     } else {
       console.log("No token, clearing cart");
       setCartItems({});
-=======
-      fetchWishlist();
-    } else {
-      console.log("No token, clearing cart and wishlist");
-      setCartItems({});
-      setWishlistItems([]);
->>>>>>> f928bb6 (last update)
     }
+
+    // 👇 هذا سيُنفَّذ دائمًا (سواء عند وجود أو عدم وجود token)
+    fetchWishlist();
   }, [token]);
 
   const clearCart = async () => {
@@ -613,8 +608,6 @@ const ShopContextProvider = (props) => {
     localStorage.removeItem("cartItems");
   };
 
-<<<<<<< HEAD
-=======
   // Wishlist functions
   const addToWishlist = async (productId) => {
     if (!token) {
@@ -624,8 +617,11 @@ const ShopContextProvider = (props) => {
 
     setWishlistLoading(true);
     try {
-      const result = await wishlistService.addToWishlist(productId, refreshToken);
-      
+      const result = await wishlistService.addToWishlist(
+        productId,
+        refreshToken
+      );
+
       if (result.success) {
         toast.success(result.message);
         // Refresh wishlist to get updated data
@@ -652,8 +648,11 @@ const ShopContextProvider = (props) => {
 
     setWishlistLoading(true);
     try {
-      const result = await wishlistService.removeFromWishlist(productId, refreshToken);
-      
+      const result = await wishlistService.removeFromWishlist(
+        productId,
+        refreshToken
+      );
+
       if (result.success) {
         toast.success(result.message);
         // Refresh wishlist to get updated data
@@ -681,7 +680,7 @@ const ShopContextProvider = (props) => {
     setWishlistLoading(true);
     try {
       const result = await wishlistService.getWishlist(1, 100, refreshToken);
-      
+
       if (result.success) {
         console.log("Wishlist data received:", result.data);
         setWishlistItems(result.data || []);
@@ -701,7 +700,10 @@ const ShopContextProvider = (props) => {
     if (!token) return false;
 
     try {
-      const result = await wishlistService.isInWishlist(productId, refreshToken);
+      const result = await wishlistService.isInWishlist(
+        productId,
+        refreshToken
+      );
       return result.success ? result.data : false;
     } catch (error) {
       console.error("Error checking wishlist status:", error);
@@ -718,7 +720,7 @@ const ShopContextProvider = (props) => {
     setWishlistLoading(true);
     try {
       const result = await wishlistService.clearWishlist(refreshToken);
-      
+
       if (result.success) {
         toast.success(result.message);
         setWishlistItems([]);
@@ -740,7 +742,6 @@ const ShopContextProvider = (props) => {
     return wishlistItems.length;
   };
 
->>>>>>> f928bb6 (last update)
   const checkout = async () => {
     if (token) {
       try {
@@ -796,7 +797,7 @@ const ShopContextProvider = (props) => {
     updataQuantity,
     getCartAmount,
     clearCart,
-    checkout, // 
+    checkout, //
     navigate,
     backendUrl,
     getProducts,
@@ -806,9 +807,6 @@ const ShopContextProvider = (props) => {
     user,
     setUser,
     clearLocalStorageCart,
-<<<<<<< HEAD
-    fetchUserCart
-=======
     fetchUserCart,
     // Wishlist functions
     wishlistItems,
@@ -818,8 +816,7 @@ const ShopContextProvider = (props) => {
     fetchWishlist,
     isInWishlist,
     clearWishlist,
-    getWishlistCount
->>>>>>> f928bb6 (last update)
+    getWishlistCount,
   };
 
   return (

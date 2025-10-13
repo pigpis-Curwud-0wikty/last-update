@@ -10,7 +10,6 @@ const Login = ({ setToken }) => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-
     if (!email || !password) {
       toast.warn("Please enter both email and password");
       return;
@@ -19,7 +18,7 @@ const Login = ({ setToken }) => {
     setLoading(true);
 
     try {
-      // ✅ Proper API request with correct headers
+      // ✅ Proper API request with correct content type
       const response = await axios.post(
         `${backendUrl}/api/Account/login`,
         { email, password },
@@ -52,7 +51,7 @@ const Login = ({ setToken }) => {
     } catch (error) {
       console.error("Login Error:", error);
 
-      // ✅ Handle server response errors
+      // ✅ Error with HTTP response (server responded but not 2xx)
       if (error.response) {
         const { status, data } = error.response;
         const apiMessage =
@@ -65,26 +64,22 @@ const Login = ({ setToken }) => {
             toast.error(apiMessage || "Bad Request — please check your input.");
             break;
           case 401:
-            toast.error(
-              apiMessage || "Unauthorized — invalid email or password."
-            );
+            toast.error(apiMessage || "Unauthorized — invalid email or password.");
             break;
           case 500:
-            toast.error(
-              apiMessage || "Internal Server Error — please try again later."
-            );
+            toast.error(apiMessage || "Internal Server Error — please try again later.");
             break;
           default:
             toast.error(apiMessage || `Server returned status ${status}`);
         }
       }
-      // ✅ Handle no response (network issue)
+
+      // ✅ Error with no response (e.g., network issue)
       else if (error.request) {
-        toast.error(
-          "No response from the server. Please check your connection."
-        );
+        toast.error("No response from the server. Please check your connection.");
       }
-      // ✅ Handle unexpected errors
+
+      // ✅ Something went wrong before sending the request
       else {
         toast.error(`Error setting up the request: ${error.message}`);
       }
@@ -100,9 +95,7 @@ const Login = ({ setToken }) => {
 
         <form onSubmit={handleSubmit}>
           <div className="mb-3">
-            <p className="text-sm font-medium text-gray-700 mb-2">
-              Email Address
-            </p>
+            <p className="text-sm font-medium text-gray-700 mb-2">Email Address</p>
             <input
               type="email"
               className="rounded-md w-full px-3 py-2 border border-gray-300 outline-none"
@@ -131,9 +124,7 @@ const Login = ({ setToken }) => {
             type="submit"
             disabled={loading}
             className={`${
-              loading
-                ? "bg-gray-400 cursor-not-allowed"
-                : "bg-black hover:bg-gray-800"
+              loading ? "bg-gray-400 cursor-not-allowed" : "bg-black hover:bg-gray-800"
             } text-white px-4 py-2 rounded-md w-full transition`}
           >
             {loading ? "Logging in..." : "Login"}

@@ -1,4 +1,4 @@
-import { motion } from 'framer-motion';
+import { motion } from "framer-motion";
 import React, { useContext, useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import { ShopContext } from "../context/ShopContext";
@@ -12,10 +12,7 @@ import HeroBanner from "../components/HeroBanner";
 import axios from "axios";
 import { Link } from "react-router-dom";
 import { toast } from "react-toastify";
-<<<<<<< HEAD
-=======
 import WishlistButton from "../components/WishlistButton";
->>>>>>> f928bb6 (last update)
 
 const Product = () => {
   const { t } = useTranslation();
@@ -42,9 +39,9 @@ const Product = () => {
   // Function to update local stock when product is added to cart
   const updateLocalStock = (variantId, quantity) => {
     if (variantId) {
-      setLocalStock(prev => ({
+      setLocalStock((prev) => ({
         ...prev,
-        [variantId]: Math.max(0, (prev[variantId] || 0) - quantity)
+        [variantId]: Math.max(0, (prev[variantId] || 0) - quantity),
       }));
     }
   };
@@ -367,33 +364,32 @@ const Product = () => {
             {productData.brand} <p>R&S</p>
           </div>
 
-<<<<<<< HEAD
           {/* Product Name */}
-          <h1 className="text-2xl font-light uppercase">
-            {productData.name}
-          </h1>
-=======
+          <h1 className="text-2xl font-light uppercase">{productData.name}</h1>
           {/* Product Name with Wishlist Button */}
           <div className="flex items-center justify-between">
             <h1 className="text-2xl font-light uppercase flex-1">
               {productData.name}
             </h1>
-            <WishlistButton 
-              productId={productData._id} 
+            <WishlistButton
+              productId={productData._id}
               size="default"
               variant="minimal"
               showText={true}
             />
           </div>
->>>>>>> f928bb6 (last update)
 
           {/* Price */}
           <div className="mt-3 mb-4">
             {/* Calculate discount using same logic as ProductCard */}
             {(() => {
               // Get prices from product data (same logic as ProductCard)
-              const originalPrice = selectedVariant?.price || productData.price || 0;
-              const finalPrice = selectedVariant?.finalPrice || productData.finalPrice || originalPrice;
+              const originalPrice =
+                selectedVariant?.price || productData.price || 0;
+              const finalPrice =
+                selectedVariant?.finalPrice ||
+                productData.finalPrice ||
+                originalPrice;
               const hasDiscount = finalPrice < originalPrice;
               // const discountPercentage = hasDiscount ? Math.round(((originalPrice - finalPrice) / originalPrice) * 100) : 0;
 
@@ -404,16 +400,18 @@ const Product = () => {
                       <div className="flex items-center gap-1">
                         <span className="text-lg text-gray-500">Price: </span>
                         <span className="text-xl font-light line-through text-gray-500">
-                          {productData.currency || '$'}{originalPrice}
+                          {productData.currency || "$"}
+                          {originalPrice}
                         </span>
                         <span className="text-xl font-light text-red-500 mr-1">
-                          {productData.currency || '$'}{finalPrice}
+                          {productData.currency || "$"}
+                          {finalPrice}
                         </span>
-                        
                       </div>
                     ) : (
                       <span className="text-sm font-medium text-gray-900">
-                        {productData.currency || '$'}{originalPrice}
+                        {productData.currency || "$"}
+                        {originalPrice}
                       </span>
                     )}
                     <div className="flex items-center">
@@ -421,7 +419,7 @@ const Product = () => {
                         // Get current stock after local updates
                         const currentStock = getCurrentStock(selectedVariant);
                         const isOutOfStock = currentStock <= 0;
-                        
+
                         // If no variant selected yet, show in stock by default
                         if (!selectedVariant) {
                           if (hasDiscount) {
@@ -437,7 +435,7 @@ const Product = () => {
                             </span>
                           );
                         }
-                        
+
                         // Check if there's not enough quantity in stock for this variant
                         if (isOutOfStock) {
                           return (
@@ -446,7 +444,7 @@ const Product = () => {
                             </span>
                           );
                         }
-                        
+
                         // Check if product has discount (final price is less than original price)
                         if (hasDiscount) {
                           return (
@@ -455,7 +453,7 @@ const Product = () => {
                             </span>
                           );
                         }
-                        
+
                         // Product is in stock and has no discount
                         return (
                           <span className="text-blue-600 text-[10px] font-medium">
@@ -477,24 +475,20 @@ const Product = () => {
 
             {/* Product Description */}
             <div className="mb-6">
-              <p className="text-sm text-gray-700 mb-2">{productData.name} in Seven Colorways</p>
+              <p className="text-sm text-gray-700 mb-2">
+                {productData.name} in Seven Colorways
+              </p>
               <p className="text-sm text-gray-700">{productData.description}</p>
             </div>
 
             {/* Model Information */}
             <div className="mb-6">
               <div className="text-sm text-gray-600 mb-2">
-                <p className="mb-1">
-                  Female model wears: Size Small/Medium
-                </p>
-                <p>
-                  Model's height: {selectedVariant?.height || "176cm"}
-                </p>
+                <p className="mb-1">Female model wears: Size Small/Medium</p>
+                <p>Model's height: {selectedVariant?.height || "176cm"}</p>
               </div>
               <div className="text-sm text-gray-600">
-                <p>
-                  Oversized fit - shop accordingly
-                </p>
+                <p>Oversized fit - shop accordingly</p>
               </div>
             </div>
 
@@ -503,7 +497,9 @@ const Product = () => {
 
             {/* Looking After Me Section */}
             <div className="mb-6">
-              <p className="text-sm font-medium mb-2 uppercase">LOOKING AFTER ME</p>
+              <p className="text-sm font-medium mb-2 uppercase">
+                LOOKING AFTER ME
+              </p>
               <p className="text-sm text-gray-600">
                 Machine wash according to instructions on price tag
               </p>
@@ -569,8 +565,9 @@ const Product = () => {
 
                               // Fetch detailed variant information
                               if (variant) {
-                                const variantDetail =
-                                  await fetchVariantDetails(variant.id);
+                                const variantDetail = await fetchVariantDetails(
+                                  variant.id
+                                );
                                 if (variantDetail) {
                                   // Update the selected variant with more details
                                   setSelectedVariant(variantDetail);
@@ -602,20 +599,30 @@ const Product = () => {
                               {t("PRICE")}:
                               {(() => {
                                 // Use same logic as ProductCard for color variant pricing
-                                const originalPrice = colorVariants[0]?.price || price || 0;
-                                const finalPrice = colorVariants[0]?.finalPrice || originalPrice;
+                                const originalPrice =
+                                  colorVariants[0]?.price || price || 0;
+                                const finalPrice =
+                                  colorVariants[0]?.finalPrice || originalPrice;
                                 const hasDiscount = finalPrice < originalPrice;
-                                const discountPercentage = hasDiscount ? Math.round(((originalPrice - finalPrice) / originalPrice) * 100) : 0;
+                                const discountPercentage = hasDiscount
+                                  ? Math.round(
+                                      ((originalPrice - finalPrice) /
+                                        originalPrice) *
+                                        100
+                                    )
+                                  : 0;
 
                                 return (
                                   <div className="flex items-center gap-1">
                                     {hasDiscount ? (
                                       <>
                                         <span className="text-sm font-medium">
-                                          {productData.currency || '$'}{finalPrice}
+                                          {productData.currency || "$"}
+                                          {finalPrice}
                                         </span>
                                         <span className="text-xs line-through">
-                                          {productData.currency || '$'}{originalPrice}
+                                          {productData.currency || "$"}
+                                          {originalPrice}
                                         </span>
                                         <span className="text-red-500 text-xs">
                                           ({discountPercentage}% OFF)
@@ -623,7 +630,8 @@ const Product = () => {
                                       </>
                                     ) : (
                                       <span className="text-sm font-medium">
-                                        {productData.currency || '$'}{originalPrice}
+                                        {productData.currency || "$"}
+                                        {originalPrice}
                                       </span>
                                     )}
                                   </div>
@@ -650,10 +658,14 @@ const Product = () => {
                     // Get all unique sizes from variants
                     const rawSizes =
                       variants.length > 0
-                        ? Array.from(new Set(variants.map((v) => v.size))).filter(Boolean)
-                        : (productData.sizes || []);
+                        ? Array.from(
+                            new Set(variants.map((v) => v.size))
+                          ).filter(Boolean)
+                        : productData.sizes || [];
                     // Map to labels and unique
-                    const allSizes = Array.from(new Set(rawSizes.map((s) => mapSizeToLabel(s))));
+                    const allSizes = Array.from(
+                      new Set(rawSizes.map((s) => mapSizeToLabel(s)))
+                    );
 
                     return (
                       <div className="flex flex-wrap gap-2">
@@ -661,10 +673,10 @@ const Product = () => {
                           // Find variant with this size and selected color (if any)
                           const matchingVariant = selectedVariant
                             ? variants.find(
-                              (v) =>
-                                mapSizeToLabel(v.size) === sizeItem &&
-                                v.color === selectedVariant.color
-                            )
+                                (v) =>
+                                  mapSizeToLabel(v.size) === sizeItem &&
+                                  v.color === selectedVariant.color
+                              )
                             : null;
 
                           // Get available colors for this size
@@ -736,60 +748,76 @@ const Product = () => {
                 }
               </div>
 
-            {/* Variants Table (color/size/waist/length/qty/id) */}
-            {variants?.length > 0 && (
-              <div className="mb-6">
-                <h3 className="text-sm font-medium mb-2">{t("VARIANTS")}</h3>
-                <div className="overflow-x-auto">
-                  <table className="min-w-full text-sm">
-                    <thead>
-                      <tr className="text-left text-gray-600">
-                        <th className="py-2 pr-4">Color</th>
-                        <th className="py-2 pr-4">Size</th>
-                        <th className="py-2 pr-4">Waist</th>
-                        <th className="py-2 pr-4">Length</th>
-                        <th className="py-2 pr-4">Qty</th>
-                        <th className="py-2 pr-4">ID</th>
-                        <th className="py-2 pr-4"></th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {[...variants]
-                        .sort((a,b) => String(a.color||"").localeCompare(String(b.color||"")) || (Number(a.size)||0)-(Number(b.size)||0))
-                        .map(v => (
-                        <tr key={v.id} className="border-t">
-                          <td className="py-2 pr-4">
-                            <span className="inline-flex items-center px-2 py-1 rounded bg-gray-100 text-gray-800">
-                              {String(v.color || "-")}
-                            </span>
-                          </td>
-                          <td className="py-2 pr-4">{mapSizeToLabel(v.size)}</td>
-                          <td className="py-2 pr-4">{v.waist ?? "-"}</td>
-                          <td className="py-2 pr-4">{v.length ?? "-"}</td>
-                          <td className="py-2 pr-4">
-                            <span className={Number(v.quantity) > 0 ? "" : "text-red-500"}>{v.quantity ?? 0}</span>
-                          </td>
-                          <td className="py-2 pr-4">{v.id}</td>
-                          <td className="py-2 pr-4">
-                            <button
-                              className="text-xs border px-3 py-1 hover:bg-black hover:text-white transition"
-                              onClick={async () => {
-                                setSelectedVariant(v);
-                                setSize(mapSizeToLabel(v.size));
-                                const detail = await fetchVariantDetails(v.id);
-                                if (detail?.images?.length) setImage(detail.images[0]);
-                              }}
-                            >
-                              {t("SELECT")}
-                            </button>
-                          </td>
+              {/* Variants Table (color/size/waist/length/qty/id) */}
+              {variants?.length > 0 && (
+                <div className="mb-6">
+                  <h3 className="text-sm font-medium mb-2">{t("VARIANTS")}</h3>
+                  <div className="overflow-x-auto">
+                    <table className="min-w-full text-sm">
+                      <thead>
+                        <tr className="text-left text-gray-600">
+                          <th className="py-2 pr-4">Color</th>
+                          <th className="py-2 pr-4">Size</th>
+                          <th className="py-2 pr-4">Waist</th>
+                          <th className="py-2 pr-4">Length</th>
+                          <th className="py-2 pr-4">Qty</th>
+                          <th className="py-2 pr-4">ID</th>
+                          <th className="py-2 pr-4"></th>
                         </tr>
-                      ))}
-                    </tbody>
-                  </table>
+                      </thead>
+                      <tbody>
+                        {[...variants]
+                          .sort(
+                            (a, b) =>
+                              String(a.color || "").localeCompare(
+                                String(b.color || "")
+                              ) || (Number(a.size) || 0) - (Number(b.size) || 0)
+                          )
+                          .map((v) => (
+                            <tr key={v.id} className="border-t">
+                              <td className="py-2 pr-4">
+                                <span className="inline-flex items-center px-2 py-1 rounded bg-gray-100 text-gray-800">
+                                  {String(v.color || "-")}
+                                </span>
+                              </td>
+                              <td className="py-2 pr-4">
+                                {mapSizeToLabel(v.size)}
+                              </td>
+                              <td className="py-2 pr-4">{v.waist ?? "-"}</td>
+                              <td className="py-2 pr-4">{v.length ?? "-"}</td>
+                              <td className="py-2 pr-4">
+                                <span
+                                  className={
+                                    Number(v.quantity) > 0 ? "" : "text-red-500"
+                                  }
+                                >
+                                  {v.quantity ?? 0}
+                                </span>
+                              </td>
+                              <td className="py-2 pr-4">{v.id}</td>
+                              <td className="py-2 pr-4">
+                                <button
+                                  className="text-xs border px-3 py-1 hover:bg-black hover:text-white transition"
+                                  onClick={async () => {
+                                    setSelectedVariant(v);
+                                    setSize(mapSizeToLabel(v.size));
+                                    const detail = await fetchVariantDetails(
+                                      v.id
+                                    );
+                                    if (detail?.images?.length)
+                                      setImage(detail.images[0]);
+                                  }}
+                                >
+                                  {t("SELECT")}
+                                </button>
+                              </td>
+                            </tr>
+                          ))}
+                      </tbody>
+                    </table>
+                  </div>
                 </div>
-              </div>
-            )}
+              )}
 
               {/* Sizing Guide */}
               <div className="flex items-center mb-4">
@@ -906,15 +934,17 @@ const Product = () => {
             <div className="mb-6">
               <p className="text-sm font-medium mb-3">Quantity</p>
               <div className="flex items-center gap-3">
-                <button 
+                <button
                   className="w-8 h-8 border border-gray-300 flex items-center justify-center hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
                   onClick={() => setQuantity(Math.max(1, quantity - 1))}
                   disabled={quantity <= 1}
                 >
                   -
                 </button>
-                <span className="text-sm font-medium min-w-[20px] text-center">{quantity}</span>
-                <button 
+                <span className="text-sm font-medium min-w-[20px] text-center">
+                  {quantity}
+                </span>
+                <button
                   className="w-8 h-8 border border-gray-300 flex items-center justify-center hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
                   onClick={() => setQuantity(Math.min(99, quantity + 1))}
                   disabled={quantity >= 99}
@@ -964,17 +994,25 @@ const Product = () => {
                     return;
                   }
                   if (getCurrentStock(selectedVariant) <= 0) {
-                    toast.error("Not enough quantity in stock for this variant", {
-                      position: "top-right",
-                      autoClose: 3000,
-                      hideProgressBar: false,
-                      closeOnClick: true,
-                      pauseOnHover: true,
-                      draggable: true,
-                    });
+                    toast.error(
+                      "Not enough quantity in stock for this variant",
+                      {
+                        position: "top-right",
+                        autoClose: 3000,
+                        hideProgressBar: false,
+                        closeOnClick: true,
+                        pauseOnHover: true,
+                        draggable: true,
+                      }
+                    );
                     return;
                   }
-                  addToCart(productData._id, size, selectedVariant?.color, quantity);
+                  addToCart(
+                    productData._id,
+                    size,
+                    selectedVariant?.color,
+                    quantity
+                  );
                   // Update local stock
                   updateLocalStock(selectedVariant?.id, quantity);
                   toast.success("Product added to cart!", {
@@ -986,9 +1024,7 @@ const Product = () => {
                     draggable: true,
                   });
                 }}
-                disabled={
-                  !size || !selectedVariant?.color
-                }
+                disabled={!size || !selectedVariant?.color}
               >
                 {/* Animated background */}
                 <div
@@ -997,14 +1033,12 @@ const Product = () => {
                 />
                 {/* Button text */}
                 <span className="relative z-10 group-hover:text-white transition-colors duration-300">
-                {t("ADD_TO_CART")}
+                  {t("ADD_TO_CART")}
                 </span>
               </button>
               <button
                 className={`cursor-pointer border border-black text-black px-8 py-3 text-sm hover:bg-black hover:text-white transition-colors ${(!size || !selectedVariant?.color) && "opacity-50 cursor-not-allowed"}`}
-                disabled={
-                  !size || !selectedVariant?.color
-                }
+                disabled={!size || !selectedVariant?.color}
               >
                 BUY IT NOW
               </button>
@@ -1012,9 +1046,15 @@ const Product = () => {
 
             {/* Additional Links */}
             <div className="text-sm text-gray-600 space-y-1">
-              <p className="underline cursor-pointer hover:text-black">Materials</p>
-              <p className="underline cursor-pointer hover:text-black">Shipping & Returns</p>
-              <p className="underline cursor-pointer hover:text-black">Care Guide</p>
+              <p className="underline cursor-pointer hover:text-black">
+                Materials
+              </p>
+              <p className="underline cursor-pointer hover:text-black">
+                Shipping & Returns
+              </p>
+              <p className="underline cursor-pointer hover:text-black">
+                Care Guide
+              </p>
             </div>
 
             {/* Variant Details */}
@@ -1054,19 +1094,26 @@ const Product = () => {
                     {(() => {
                       // Use same logic as ProductCard for variant pricing
                       const originalPrice = selectedVariant.price || 0;
-                      const finalPrice = selectedVariant.finalPrice || originalPrice;
+                      const finalPrice =
+                        selectedVariant.finalPrice || originalPrice;
                       const hasDiscount = finalPrice < originalPrice;
-                      const discountPercentage = hasDiscount ? Math.round(((originalPrice - finalPrice) / originalPrice) * 100) : 0;
+                      const discountPercentage = hasDiscount
+                        ? Math.round(
+                            ((originalPrice - finalPrice) / originalPrice) * 100
+                          )
+                        : 0;
 
                       return (
                         <div className="flex items-center gap-1">
                           {hasDiscount ? (
                             <>
                               <span className="text-sm font-medium text-gray-900">
-                                {productData.currency || '$'}{finalPrice}
+                                {productData.currency || "$"}
+                                {finalPrice}
                               </span>
                               <span className="text-xs text-gray-500 line-through">
-                                {productData.currency || '$'}{originalPrice}
+                                {productData.currency || "$"}
+                                {originalPrice}
                               </span>
                               <span className="bg-red-500 text-white text-xs px-2 py-1 rounded">
                                 {discountPercentage}% OFF
@@ -1074,7 +1121,8 @@ const Product = () => {
                             </>
                           ) : (
                             <span className="text-sm font-medium text-gray-900">
-                              {productData.currency || '$'}{originalPrice}
+                              {productData.currency || "$"}
+                              {originalPrice}
                             </span>
                           )}
                         </div>
@@ -1102,20 +1150,24 @@ const Product = () => {
                       ? `${getCurrentStock(selectedVariant)} ${t("ITEMS")}`
                       : t("OUT_OF_STOCK")}
                   </div>
-                  
+
                   {/* Show original stock vs current stock */}
                   {selectedVariant.quantity > 0 && (
                     <>
                       <div className="text-gray-600">Original Stock:</div>
-                      <div>{selectedVariant.quantity} {t("ITEMS")}</div>
+                      <div>
+                        {selectedVariant.quantity} {t("ITEMS")}
+                      </div>
                     </>
                   )}
-                  
+
                   {/* Show items in cart */}
                   {localStock[selectedVariant.id] > 0 && (
                     <>
                       <div className="text-gray-600">In Cart:</div>
-                      <div className="text-orange-600 font-medium">{localStock[selectedVariant.id]} {t("ITEMS")}</div>
+                      <div className="text-orange-600 font-medium">
+                        {localStock[selectedVariant.id]} {t("ITEMS")}
+                      </div>
                     </>
                   )}
 
@@ -1136,7 +1188,6 @@ const Product = () => {
             </div>
           </div>
         </div>
-
       </motion.div>
       {/* Description & Reviews Section */}
       <div className="mt-20">
@@ -1182,7 +1233,7 @@ const Product = () => {
 
       {/* HeroBanner full width */}
       <div className="w-screen relative left-1/2 right-1/2 -mx-[50vw]">
-        <HeroBanner collectionId={2}/>
+        <HeroBanner collectionId={2} />
       </div>
 
       {/* Related Products */}
@@ -1235,14 +1286,22 @@ const Product = () => {
               >
                 {productData.name}
               </div>
-              <div style={{ fontSize: "0.9rem", color: "#222", fontWeight: "normal" }}>
+              <div
+                style={{
+                  fontSize: "0.9rem",
+                  color: "#222",
+                  fontWeight: "normal",
+                }}
+              >
                 {productData.currency}
                 {productData.price}
               </div>
-              
+
               {/* Current Stock Display in Rectangle */}
               {selectedVariant && (
-                <div style={{ fontSize: "0.75rem", color: "#666", marginTop: 4 }}>
+                <div
+                  style={{ fontSize: "0.75rem", color: "#666", marginTop: 4 }}
+                >
                   Stock: {getCurrentStock(selectedVariant)} items
                   {localStock[selectedVariant.id] > 0 && (
                     <span style={{ color: "#f97316", marginLeft: 8 }}>
@@ -1251,15 +1310,29 @@ const Product = () => {
                   )}
                 </div>
               )}
-              
+
               {/* Color and Size Selection in Rectangle */}
-              <div style={{ marginTop: 8, display: "flex", flexDirection: "column", gap: 6 }}>
+              <div
+                style={{
+                  marginTop: 8,
+                  display: "flex",
+                  flexDirection: "column",
+                  gap: 6,
+                }}
+              >
                 {/* Color Selection */}
                 {variants.length > 0 && (
                   <div>
-                    <div style={{ fontSize: "0.75rem", fontWeight: 500, marginBottom: 4, color: "#666" }}>
+                    <div
+                      style={{
+                        fontSize: "0.75rem",
+                        fontWeight: 500,
+                        marginBottom: 4,
+                        color: "#666",
+                      }}
+                    >
                       Color: {selectedVariant?.color || "Select"}
-            </div>
+                    </div>
                     <div style={{ display: "flex", gap: 4, flexWrap: "wrap" }}>
                       {Array.from(new Set(variants.map((v) => v.color)))
                         .filter(Boolean)
@@ -1268,13 +1341,20 @@ const Product = () => {
                           <button
                             key={index}
                             onClick={async () => {
-                              const variant = variants.find((v) => v.color === color);
+                              const variant = variants.find(
+                                (v) => v.color === color
+                              );
                               setSelectedVariant(variant);
                               if (variant) {
-                                const variantDetail = await fetchVariantDetails(variant.id);
+                                const variantDetail = await fetchVariantDetails(
+                                  variant.id
+                                );
                                 if (variantDetail) {
                                   setSelectedVariant(variantDetail);
-                                  if (variantDetail.images && variantDetail.images.length > 0) {
+                                  if (
+                                    variantDetail.images &&
+                                    variantDetail.images.length > 0
+                                  ) {
                                     setImage(variantDetail.images[0]);
                                     setVariantImages((prev) => ({
                                       ...prev,
@@ -1288,7 +1368,10 @@ const Product = () => {
                               width: 16,
                               height: 16,
                               borderRadius: "50%",
-                              border: selectedVariant?.color === color ? "2px solid #000" : "1px solid #ccc",
+                              border:
+                                selectedVariant?.color === color
+                                  ? "2px solid #000"
+                                  : "1px solid #ccc",
                               backgroundColor: color.toLowerCase(),
                               cursor: "pointer",
                               transition: "all 0.2s ease",
@@ -1296,7 +1379,13 @@ const Product = () => {
                           />
                         ))}
                       {variants.length > 3 && (
-                        <span style={{ fontSize: "0.7rem", color: "#999", alignSelf: "center" }}>
+                        <span
+                          style={{
+                            fontSize: "0.7rem",
+                            color: "#999",
+                            alignSelf: "center",
+                          }}
+                        >
                           +{variants.length - 3}
                         </span>
                       )}
@@ -1306,7 +1395,14 @@ const Product = () => {
 
                 {/* Size Selection */}
                 <div>
-                  <div style={{ fontSize: "0.75rem", fontWeight: 500, marginBottom: 4, color: "#666" }}>
+                  <div
+                    style={{
+                      fontSize: "0.75rem",
+                      fontWeight: 500,
+                      marginBottom: 4,
+                      color: "#666",
+                    }}
+                  >
                     Size: {size || "Select"}
                   </div>
                   <div style={{ display: "flex", gap: 3, flexWrap: "wrap" }}>
@@ -1314,9 +1410,13 @@ const Product = () => {
                       // Get all unique sizes from variants
                       const rawSizes =
                         variants.length > 0
-                          ? Array.from(new Set(variants.map((v) => v.size))).filter(Boolean)
-                          : (productData.sizes || []);
-                      const allSizes = Array.from(new Set(rawSizes.map((s) => mapSizeToLabel(s))));
+                          ? Array.from(
+                              new Set(variants.map((v) => v.size))
+                            ).filter(Boolean)
+                          : productData.sizes || [];
+                      const allSizes = Array.from(
+                        new Set(rawSizes.map((s) => mapSizeToLabel(s)))
+                      );
 
                       return allSizes.slice(0, 4).map((labelSize, index) => (
                         <button
@@ -1330,18 +1430,26 @@ const Product = () => {
                                     mapSizeToLabel(v.size) === labelSize &&
                                     v.color === selectedVariant.color
                                 )
-                              : variants.find((v) => mapSizeToLabel(v.size) === labelSize);
+                              : variants.find(
+                                  (v) => mapSizeToLabel(v.size) === labelSize
+                                );
 
                             if (matchingVariant) {
-                              const variantDetail = await fetchVariantDetails(matchingVariant.id);
+                              const variantDetail = await fetchVariantDetails(
+                                matchingVariant.id
+                              );
                               if (variantDetail) {
                                 setSelectedVariant(variantDetail);
-                                if (variantDetail.images && variantDetail.images.length > 0) {
+                                if (
+                                  variantDetail.images &&
+                                  variantDetail.images.length > 0
+                                ) {
                                   setImage(variantDetail.images[0]);
                                   if (matchingVariant.color) {
                                     setVariantImages((prev) => ({
                                       ...prev,
-                                      [matchingVariant.color]: variantDetail.images,
+                                      [matchingVariant.color]:
+                                        variantDetail.images,
                                     }));
                                   }
                                 }
@@ -1354,8 +1462,12 @@ const Product = () => {
                             width: 20,
                             height: 20,
                             borderRadius: "2px",
-                            border: size === labelSize ? "2px solid #000" : "1px solid #ccc",
-                            backgroundColor: size === labelSize ? "#000" : "transparent",
+                            border:
+                              size === labelSize
+                                ? "2px solid #000"
+                                : "1px solid #ccc",
+                            backgroundColor:
+                              size === labelSize ? "#000" : "transparent",
                             color: size === labelSize ? "#fff" : "#000",
                             cursor: "pointer",
                             transition: "all 0.2s ease",
@@ -1373,13 +1485,25 @@ const Product = () => {
                     {(() => {
                       const rawSizes =
                         variants.length > 0
-                          ? Array.from(new Set(variants.map((v) => v.size))).filter(Boolean)
-                          : (productData.sizes || []);
-                      const allSizes = Array.from(new Set(rawSizes.map((s) => mapSizeToLabel(s))));
-                      return allSizes.length > 4 && (
-                        <span style={{ fontSize: "0.7rem", color: "#999", alignSelf: "center" }}>
-                          +{allSizes.length - 4}
-                        </span>
+                          ? Array.from(
+                              new Set(variants.map((v) => v.size))
+                            ).filter(Boolean)
+                          : productData.sizes || [];
+                      const allSizes = Array.from(
+                        new Set(rawSizes.map((s) => mapSizeToLabel(s)))
+                      );
+                      return (
+                        allSizes.length > 4 && (
+                          <span
+                            style={{
+                              fontSize: "0.7rem",
+                              color: "#999",
+                              alignSelf: "center",
+                            }}
+                          >
+                            +{allSizes.length - 4}
+                          </span>
+                        )
                       );
                     })()}
                   </div>
@@ -1431,18 +1555,23 @@ const Product = () => {
                   });
                   return;
                 }
-                 // Add to cart immediately when both size and color are selected
-                 addToCart(productData._id, size, selectedVariant?.color, quantity);
-                 // Update local stock
-                 updateLocalStock(selectedVariant?.id, quantity);
-                 toast.success("Product added to cart!", {
-                   position: "top-right",
-                   autoClose: 2000,
-                   hideProgressBar: false,
-                   closeOnClick: true,
-                   pauseOnHover: true,
-                   draggable: true,
-                 });
+                // Add to cart immediately when both size and color are selected
+                addToCart(
+                  productData._id,
+                  size,
+                  selectedVariant?.color,
+                  quantity
+                );
+                // Update local stock
+                updateLocalStock(selectedVariant?.id, quantity);
+                toast.success("Product added to cart!", {
+                  position: "top-right",
+                  autoClose: 2000,
+                  hideProgressBar: false,
+                  closeOnClick: true,
+                  pauseOnHover: true,
+                  draggable: true,
+                });
               }}
             >
               +
@@ -1454,9 +1583,9 @@ const Product = () => {
         {isScrollSectionInView && showModal && (
           <motion.div
             key="popover"
-            initial={{ opacity: 0, y: 100 }}   // يبدأ من تحت
-            animate={{ opacity: 1, y: 0 }}     // يتحرك لمكانه الطبيعي
-            exit={{ opacity: 0, y: 100 }}      // يرجع لتحت عند الخروج
+            initial={{ opacity: 0, y: 100 }} // يبدأ من تحت
+            animate={{ opacity: 1, y: 0 }} // يتحرك لمكانه الطبيعي
+            exit={{ opacity: 0, y: 100 }} // يرجع لتحت عند الخروج
             transition={{ duration: 0.35, ease: "easeOut" }}
             style={{
               position: "fixed",
@@ -1552,12 +1681,15 @@ const Product = () => {
                   // Get all unique sizes from variants
                   const rawSizes =
                     variants.length > 0
-                      ? Array.from(new Set(variants.map((v) => v.size))).filter(Boolean)
-                      : (productData.sizes || []);
-                  const allSizes = Array.from(new Set(rawSizes.map((s) => mapSizeToLabel(s))));
+                      ? Array.from(new Set(variants.map((v) => v.size))).filter(
+                          Boolean
+                        )
+                      : productData.sizes || [];
+                  const allSizes = Array.from(
+                    new Set(rawSizes.map((s) => mapSizeToLabel(s)))
+                  );
 
                   return allSizes.map((labelSize, index) => {
-
                     return (
                       <button
                         key={index}
@@ -1580,55 +1712,58 @@ const Product = () => {
                 transition: "color 0.3s ease",
               }}
               onClick={() => {
-                 if (!size) {
-                   toast.warning("Please select a size", {
-                     position: "top-right",
-                     autoClose: 3000,
-                     hideProgressBar: false,
-                     closeOnClick: true,
-                     pauseOnHover: true,
-                     draggable: true,
-                   });
-                   return;
-                 }
-                 if (!selectedVariant?.color) {
-                   toast.warning("Please select a color", {
-                     position: "top-right",
-                     autoClose: 3000,
-                     hideProgressBar: false,
-                     closeOnClick: true,
-                     pauseOnHover: true,
-                     draggable: true,
-                   });
-                   return;
-                 }
-                 if (getCurrentStock(selectedVariant) <= 0) {
-                   toast.error("Not enough quantity in stock for this variant", {
-                     position: "top-right",
-                     autoClose: 3000,
-                     hideProgressBar: false,
-                     closeOnClick: true,
-                     pauseOnHover: true,
-                     draggable: true,
-                   });
-                   return;
-                 }
-                 addToCart(productData._id, size, selectedVariant?.color, quantity);
-                 // Update local stock
-                 updateLocalStock(selectedVariant?.id, quantity);
-                 setShowModal(false);
-                  toast.success("Product added to cart!", {
+                if (!size) {
+                  toast.warning("Please select a size", {
                     position: "top-right",
-                    autoClose: 2000,
+                    autoClose: 3000,
                     hideProgressBar: false,
                     closeOnClick: true,
                     pauseOnHover: true,
                     draggable: true,
                   });
-               }}
-              disabled={
-                !size || !selectedVariant?.color
-              }
+                  return;
+                }
+                if (!selectedVariant?.color) {
+                  toast.warning("Please select a color", {
+                    position: "top-right",
+                    autoClose: 3000,
+                    hideProgressBar: false,
+                    closeOnClick: true,
+                    pauseOnHover: true,
+                    draggable: true,
+                  });
+                  return;
+                }
+                if (getCurrentStock(selectedVariant) <= 0) {
+                  toast.error("Not enough quantity in stock for this variant", {
+                    position: "top-right",
+                    autoClose: 3000,
+                    hideProgressBar: false,
+                    closeOnClick: true,
+                    pauseOnHover: true,
+                    draggable: true,
+                  });
+                  return;
+                }
+                addToCart(
+                  productData._id,
+                  size,
+                  selectedVariant?.color,
+                  quantity
+                );
+                // Update local stock
+                updateLocalStock(selectedVariant?.id, quantity);
+                setShowModal(false);
+                toast.success("Product added to cart!", {
+                  position: "top-right",
+                  autoClose: 2000,
+                  hideProgressBar: false,
+                  closeOnClick: true,
+                  pauseOnHover: true,
+                  draggable: true,
+                });
+              }}
+              disabled={!size || !selectedVariant?.color}
             >
               {/* Animated background */}
               <div
@@ -1637,7 +1772,7 @@ const Product = () => {
               />
               {/* Button text */}
               <span className="relative z-10 group-hover:text-white transition-colors duration-300">
-              {t("ADD_TO_CART")}
+                {t("ADD_TO_CART")}
               </span>
             </button>
           </motion.div>

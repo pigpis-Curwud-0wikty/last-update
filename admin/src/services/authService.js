@@ -15,7 +15,7 @@ class AuthService {
   // 5. If refresh fails (400+), redirects to login
 
   setupInterceptors() {
-    // Request interceptor to add Authorization header to ALL axios requests
+    // 🧩 1. Request Interceptor: Add Authorization Header
     axios.interceptors.request.use(
       (config) => {
         const token = localStorage.getItem("token");
@@ -24,16 +24,12 @@ class AuthService {
         }
         return config;
       },
-      (error) => {
-        return Promise.reject(error);
-      }
+      (error) => Promise.reject(error)
     );
 
-    // Response interceptor to handle token refresh for ALL axios requests
+    // 🧩 2. Response Interceptor: Handle Errors Globally
     axios.interceptors.response.use(
-      (response) => {
-        return response;
-      },
+      (response) => response,
       async (error) => {
         console.log("🔍 Interceptor caught error:", {
           status: error.response?.status,
@@ -43,79 +39,64 @@ class AuthService {
 
         const originalRequest = error.config;
 
-        // Check if error is due to invalid token (401)
+        // 🟥 Handle 409 Conflict (e.g., product with same name)
+        if (error.response?.status === 409) {
+          const serverMsg =
+            error.response?.data?.message ||
+            error.response?.data?.errors?.messages?.[0] ||
+            "Conflict error (resource already exists).";
+
+          console.warn("⚠️ Conflict detected:", serverMsg);
+
+          // لو عندك Toast أو Alert في المشروع ممكن تضيفه هنا:
+          if (window?.toast) {
+            window.toast.error(`❌ ${serverMsg}`);
+          } else {
+            alert(`⚠️ ${serverMsg}`);
+          }
+
+          return Promise.reject({
+            statuscode: 409,
+            message: serverMsg,
+            responseBody: error.response?.data,
+          });
+        }
+
+        // 🟡 Handle 401 Unauthorized (token invalid or expired)
         if (error.response?.status === 401 && !originalRequest._retry) {
           const existingToken = localStorage.getItem("token");
-          // If there is no token (guest), don't attempt refresh or redirect.
-          // Allow public pages to continue handling this error gracefully.
-          if (!existingToken) {
-            return Promise.reject(error);
-          }
+          if (!existingToken) return Promise.reject(error);
 
           console.log("🔄 401 detected, attempting token refresh...");
 
           if (this.isRefreshing) {
-            // If already refreshing, queue the request
             return new Promise((resolve, reject) => {
               this.failedQueue.push({ resolve, reject });
             })
-              .then(() => {
-                return axios(originalRequest);
-              })
-              .catch((err) => {
-                return Promise.reject(err);
-              });
+              .then(() => axios(originalRequest))
+              .catch((err) => Promise.reject(err));
           }
 
           originalRequest._retry = true;
           this.isRefreshing = true;
 
           try {
-            // Attempt to refresh token
             const newToken = await this.refreshToken();
 
             if (newToken) {
-              console.log(
-                "✅ Token refresh successful, retrying original request"
-              );
-              // Update token in localStorage
+              console.log("✅ Token refresh successful, retrying request");
               localStorage.setItem("token", newToken);
-
-              // Update Authorization header for the original request
               originalRequest.headers.Authorization = `Bearer ${newToken}`;
-
-              // Process queued requests
               this.processQueue(null, newToken);
-
-              // Retry the original request
               return axios(originalRequest);
             } else {
               console.log("❌ Token refresh failed, redirecting to login");
-              // Refresh failed, redirect to login
               this.processQueue(new Error("Token refresh failed"), null);
               this.redirectToLogin();
               return Promise.reject(error);
             }
           } catch (refreshError) {
             console.error("❌ Token refresh error:", refreshError);
-
-            // If refresh token returns 400 or any error, redirect to login
-            if (
-              refreshError.response?.status === 400 ||
-              refreshError.response?.status >= 400
-            ) {
-              console.log(
-                "❌ Refresh token is invalid/expired, redirecting to login"
-              );
-              this.processQueue(new Error("Refresh token invalid"), null);
-              this.redirectToLogin();
-              return Promise.reject(error);
-            }
-
-            // For any other error (network, timeout, etc.), also redirect to login
-            console.log(
-              "❌ Refresh token failed with error, redirecting to login"
-            );
             this.processQueue(refreshError, null);
             this.redirectToLogin();
             return Promise.reject(error);
@@ -124,7 +105,7 @@ class AuthService {
           }
         }
 
-        // For non-401 errors, just reject
+        // ⛔ For all other errors (403, 404, 500, etc.)
         return Promise.reject(error);
       }
     );

@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useContext } from "react";
 import { useParams, Link } from "react-router-dom";
 import { ShopContext } from "../context/ShopContext";
-import { motion } from "framer-motion";
+// import { motion } from "framer-motion";
 import ProductCard from "../components/ProductCard";
 import { FaChevronDown, FaTimes } from "react-icons/fa";
 import { useTranslation } from "react-i18next";
