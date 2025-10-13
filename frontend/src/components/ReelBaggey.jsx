@@ -5,17 +5,17 @@ import ProductCard from './ProductCard'
 import { motion } from 'framer-motion'
 import { useTranslation } from 'react-i18next';
 
-const ReelDenim = () => {
+const ReelBaggey = () => {
     const { t } = useTranslation();
     const { backendUrl } = useContext(ShopContext);
 
-    const [denimProducts, setDenimProducts] = useState([]);
+    const [baggeyProducts, setBaggeyProducts] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState("");
     const [subcategory, setSubcategory] = useState(null);
 
     useEffect(() => {
-        const fetchDenimProducts = async () => {
+        const fetchBaggeyProducts = async () => {
             try {
                 setLoading(true);
                 setError("");
@@ -29,17 +29,17 @@ const ReelDenim = () => {
                 if (subcategoriesResponse.ok && subcategoriesData.responseBody) {
                     const subcategories = subcategoriesData.responseBody.data || [];
 
-                    // دور على Subcategory اسمها Denim
-                    const denimSubcategory = subcategories.find(
-                        sub => sub.name?.toLowerCase() === "denim"
+                    // دور على Subcategory اسمها Baggey
+                    const baggeySubcategory = subcategories.find(
+                        sub => sub.name?.toLowerCase() === "baggey"
                     );
 
-                    if (denimSubcategory) {
-                        setSubcategory(denimSubcategory);
+                    if (baggeySubcategory) {
+                        setSubcategory(baggeySubcategory);
 
-                        // هات المنتجات الخاصة بالـ Denim
+                        // هات المنتجات الخاصة بالـ Baggey
                         const productsResponse = await fetch(
-                            `${backendUrl}/api/products?subCategoryId=${denimSubcategory.id}&isActive=true&includeDeleted=false&page=1&pageSize=50`
+                            `${backendUrl}/api/products?subCategoryId=${baggeySubcategory.id}&isActive=true&includeDeleted=false&page=1&pageSize=50`
                         );
                         const productsData = await productsResponse.json();
 
@@ -47,26 +47,26 @@ const ReelDenim = () => {
                             productsResponse.ok &&
                             Array.isArray(productsData.responseBody?.data)
                         ) {
-                            setDenimProducts(productsData.responseBody.data);
+                            setBaggeyProducts(productsData.responseBody.data);
                         } else {
-                            setDenimProducts([]);
+                            setBaggeyProducts([]);
                         }
                     } else {
-                        setError("Denim subcategory not found");
-                        setDenimProducts([]);
+                        setError("Baggey subcategory not found");
+                        setBaggeyProducts([]);
                     }
                 } else {
                     setError(subcategoriesData.message || "Failed to load subcategories");
                 }
             } catch (err) {
-                console.error("Error fetching Denim products:", err);
+                console.error("Error fetching Baggey products:", err);
                 setError("Network error. Please try again.");
             } finally {
                 setLoading(false);
             }
         };
 
-        fetchDenimProducts();
+        fetchBaggeyProducts();
     }, [backendUrl]);
 
     return (
@@ -97,17 +97,17 @@ const ReelDenim = () => {
                     {/* Subcategory Header */}
                     <div className="text-center mb-6 sm:mb-8">
                         <h1 className="text-xl sm:text-2xl md:text-3xl tracking-wide mb-3 sm:mb-4 uppercase">
-                            <Title text1={t('REEL')} text2={t('DENIM_COLLECTION')} />
+                            <Title text1={t('REEL')} text2={t('BAGGEY_COLLECTION')} />
                         </h1>
                         <p className="text-gray-600 text-sm sm:text-base max-w-3xl mx-auto px-4">
-                            {t('DENIM_DESCRIPTION')}
+                            {t('BAGGEY_DESCRIPTION')}
                         </p>
                     </div>
 
                     {/* Products Grid */}
-                    {denimProducts.length > 0 ? (
+                    {baggeyProducts.length > 0 ? (
                         <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4 md:gap-6">
-                            {denimProducts.slice(0, 8).map((product) => (
+                            {baggeyProducts.slice(0, 8).map((product) => (
                                 <ProductCard
                                     key={product.id}
                                     product={product}
@@ -116,7 +116,7 @@ const ReelDenim = () => {
                         </div>
                     ) : (
                         <div className="text-center text-gray-500 my-8">
-                            <p className="text-sm sm:text-base">{t('NO_DENIM_PRODUCTS')}</p>
+                            <p className="text-sm sm:text-base">{t('NO_BAGGEY_PRODUCTS')}</p>
                         </div>
                     )}
                 </>
@@ -125,4 +125,4 @@ const ReelDenim = () => {
     )
 }
 
-export default ReelDenim
+export default ReelBaggey

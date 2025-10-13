@@ -53,13 +53,19 @@ const TypeCollection = () => {
 
         if (data.responseBody?.data && Array.isArray(data.responseBody.data)) {
           const transformedCategories = data.responseBody.data.map(
-            (category) => ({
-              id: category.id,
-              name: category.name,
-              image: category.image || assets.eniem,
-              link: `/category/${category.id}`,
-              description: category.description || "",
-            })
+            (category) => {
+              // Extract the main image from the images array
+              const mainImage = category.images?.find(img => img.isMain) || category.images?.[0];
+              const imageUrl = mainImage?.url || assets.eniem;
+              
+              return {
+                id: category.id,
+                name: category.name,
+                image: imageUrl,
+                link: `/category/${category.id}`,
+                description: category.description || "",
+              };
+            }
           );
 
           setCategories(transformedCategories);
@@ -122,11 +128,14 @@ const TypeCollection = () => {
                   src={item.image}
                   alt={item.name}
                   className="w-full h-full object-cover transition-transform duration-300 hover:scale-110"
+                  onError={(e) => {
+                    e.target.src = assets.eniem; // Fallback image if category image fails to load
+                  }}
                 />
               </div>
               <div className="p-4">
-                <h3 className="font-medium text-lg">
-                  {t(item.name.toUpperCase())}
+                <h3 className="font-medium text-lg text-gray-900">
+                  {item.name}
                 </h3>
                 <p className="text-sm text-gray-500 mt-1">
                   {item.description || t("VIEW_PRODUCTS")}
