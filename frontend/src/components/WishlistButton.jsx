@@ -7,7 +7,8 @@ const WishlistButton = ({
   className = "", 
   showText = false, 
   size = "default",
-  variant = "default" 
+  variant = "default",
+  isInWishlist: isInWishlistProp = null
 }) => {
   const { t } = useTranslation();
   const { 
@@ -23,19 +24,21 @@ const WishlistButton = ({
 
   // Check if product is in wishlist when component mounts or productId changes
   useEffect(() => {
-    const checkWishlistStatus = async () => {
-      if (productId && user) {
-        console.log('Checking wishlist status for product:', productId);
-        const inWishlist = await isInWishlist(Number(productId));
-        console.log('Is in wishlist:', inWishlist);
-        setIsInWishlistState(inWishlist);
-      } else {
-        setIsInWishlistState(false);
-      }
-    };
-
-    checkWishlistStatus();
-  }, [productId, user, isInWishlist]);
+    // If isInWishlistProp is provided, use it directly
+    if (isInWishlistProp !== null) {
+      console.log('Using provided wishlist status for product:', productId, isInWishlistProp);
+      setIsInWishlistState(isInWishlistProp);
+      return;
+    }
+    
+    // Otherwise, fetch the status from the API
+    if (productId && user) {
+      console.log('Using isInWishlist field from product data:', productId, isInWishlistProp);
+      setIsInWishlistState(isInWishlistProp);
+    } else {
+      setIsInWishlistState(false);
+    }
+  }, [productId, user, isInWishlist, isInWishlistProp]);
 
   const handleToggleWishlist = async (e) => {
     e.preventDefault();

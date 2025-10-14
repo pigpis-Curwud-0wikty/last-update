@@ -320,6 +320,7 @@ const ShopContextProvider = (props) => {
       const list = data?.responseBody?.data || [];
 
       // 🧩 Transform response to match UI shape
+      const wishlistIds = wishlistItems.map((item) => item.productId);
       const transformed = list.map((p) => ({
         _id: String(p.id),
         name: p.name,
@@ -338,6 +339,7 @@ const ShopContextProvider = (props) => {
         category: p.categoryName || p.category?.name,
         subCategory: p.subCategoryName || p.subCategory?.name,
         sizes: (p.variants || []).map((v) => v.size).filter(Boolean),
+        isInWishlist: wishlistIds.includes(p.id),
       }));
 
       setProducts(transformed);
@@ -573,7 +575,23 @@ const ShopContextProvider = (props) => {
     }
 
     // 👇 هذا سيُنفَّذ دائمًا (سواء عند وجود أو عدم وجود token)
-    fetchWishlist();
+    // Add debugging logs to fetchWishlist to identify the issue
+    async function fetchWishlist() {
+      try {
+        console.log("Fetching wishlist...");
+        const response = await wishlistService.getWishlist(1, 20, refreshToken);
+        console.log("Wishlist API response:", response);
+    
+        if (response.success) {
+          setWishlist(response.data);
+          console.log("Wishlist updated successfully:", response.data);
+        } else {
+          console.error("Error fetching wishlist:", response.error);
+        }
+      } catch (error) {
+        console.error("Unexpected error fetching wishlist:", error);
+      }
+    }
   }, [token]);
 
   const clearCart = async () => {
@@ -615,32 +633,31 @@ const ShopContextProvider = (props) => {
   // Wishlist functions
   const addToWishlist = async (productId) => {
     if (!token) {
-      toast.error("Please log in to add items to wishlist");
-      return false;
+      toast.error("Please log in to add items to your wishlist.");
+      return;
     }
-
-    setWishlistLoading(true);
+  
     try {
-      const result = await wishlistService.addToWishlist(
-        productId,
+      const response = await fetchWithTokenRefresh(
+        `${backendUrl}/api/Wishlist/${productId}`,
+        {
+          method: "POST",
+          headers: getAuthHeaders(),
+          body: JSON.stringify({ productId }),
+        },
         refreshToken
       );
-
-      if (result.success) {
-        toast.success(result.message);
-        // Refresh wishlist to get updated data
-        await fetchWishlist();
-        return true;
+  
+      if (response.ok) {
+        toast.success("Item added to wishlist.");
+        await fetchWishlist(); // Refresh wishlist
       } else {
-        toast.error(result.error);
-        return false;
+        const errorData = await response.json();
+        toast.error(errorData.message || "Failed to add item to wishlist.");
       }
     } catch (error) {
       console.error("Error adding to wishlist:", error);
-      toast.error("Error adding product to wishlist");
-      return false;
-    } finally {
-      setWishlistLoading(false);
+      toast.error("An error occurred. Please try again.");
     }
   };
 
@@ -652,10 +669,20 @@ const ShopContextProvider = (props) => {
 
     setWishlistLoading(true);
     try {
-      const result = await wishlistService.removeFromWishlist(
-        productId,
+      const response = await fetchWithTokenRefresh(
+        `https://localhost:7288/api/Wishlist/1`,
+        {
+          method: "DELETE",
+          headers: {
+            ...getAuthHeaders(),
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ productId }),
+        },
         refreshToken
       );
+
+      const result = await response.json();
 
       if (result.success) {
         toast.success(result.message);
@@ -683,11 +710,43 @@ const ShopContextProvider = (props) => {
 
     setWishlistLoading(true);
     try {
-      const result = await wishlistService.getWishlist(1, 100, refreshToken);
+      const response = await fetchWithTokenRefresh(
+        `${backendUrl}/api/Wishlist?all=false&page=1&pageSize=20`,
+        {
+          method: "GET",
+          headers: getAuthHeaders(),
+        },
+        refreshToken
+      );
+
+      const result = await response.json();
 
       if (result.success) {
         console.log("Wishlist data received:", result.data);
-        setWishlistItems(result.data || []);
+        
+        // Check if data is an array and has items
+        if (Array.isArray(result.data) && result.data.length > 0) {
+          console.log("Setting wishlist items:", result.data);
+          setWishlistItems(result.data);
+        } else {
+          console.warn("Wishlist data is empty or not an array:", result.data);
+          // Force refresh token and try again if data is empty
+          if (Array.isArray(result.data) && result.data.length === 0) {
+            console.log("Attempting to refresh token and fetch wishlist again");
+            await refreshToken();
+            // Try fetching again after token refresh
+            const retryResult = await wishlistService.getWishlist(1, 100, refreshToken);
+            if (retryResult.success && Array.isArray(retryResult.data)) {
+              console.log("Retry successful, setting wishlist items:", retryResult.data);
+              setWishlistItems(retryResult.data);
+            } else {
+              console.error("Retry failed, setting empty wishlist");
+              setWishlistItems([]);
+            }
+          } else {
+            setWishlistItems([]);
+          }
+        }
       } else {
         console.error("Error fetching wishlist:", result.error);
         setWishlistItems([]);

@@ -45,7 +45,11 @@ const ProductItem = ({
 
           {/* ❤️ زر المفضلة */}
           <div className="absolute top-3 right-3 z-10 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
-            <WishlistButton productId={id} size="small" variant="default" />
+            <WishlistButton 
+              productId={id} 
+              size="small" 
+              variant="default" 
+            />
           </div>
 
           {/* 🖼️ صورة المنتج */}
