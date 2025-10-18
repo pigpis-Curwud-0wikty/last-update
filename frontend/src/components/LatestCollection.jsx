@@ -12,6 +12,7 @@ const LatestCollection = () => {
 
   useEffect(() => {
     // Filter active products and get the latest 8 by creation date or ID
+    // Filter active products and get the latest 8 by creation date or ID
     if (Array.isArray(products) && products.length > 0) {
       const activeProducts = products.filter(product => product.isActive === true);
       
