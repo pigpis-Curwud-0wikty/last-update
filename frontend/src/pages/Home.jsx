@@ -51,13 +51,13 @@ const Home = () => {
         variants={itemVariants}>
         <ScrollSection scroll1={assets.scroll1_max} scroll2={assets.scroll2_max} />
       </motion.div>
-      <motion.div
+      {/* <motion.div
         initial="hidden"
         whileInView="visible"
         viewport={{ once: true, amount: 0.3 }}
         variants={itemVariants}>
         <TypeProduct />
-      </motion.div>
+      </motion.div> */}
       <motion.div
         initial="hidden"
         whileInView="visible"

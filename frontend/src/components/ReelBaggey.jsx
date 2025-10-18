@@ -9,64 +9,81 @@ const ReelBaggey = () => {
     const { t } = useTranslation();
     const { backendUrl } = useContext(ShopContext);
 
-    const [baggeyProducts, setBaggeyProducts] = useState([]);
+    const [wishlistProducts, setWishlistProducts] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState("");
-    const [subcategory, setSubcategory] = useState(null);
+
+    // Function to fetch wishlist products
+    const fetchWishlistProducts = async () => {
+        try {
+            const authToken = localStorage.getItem("token");
+            
+            if (!authToken) {
+                setError("Please log in to view your wishlist");
+                setWishlistProducts([]);
+                return;
+            }
+
+            const headers = {
+                "Content-Type": "application/json",
+                "Accept": "text/plain",
+                "Authorization": `Bearer ${authToken}`
+            };
+
+            console.log("Fetching wishlist from:", `${backendUrl}/api/Wishlist`);
+            const response = await fetch(`${backendUrl}/api/Wishlist`, { headers });
+            
+            if (response.ok) {
+                const data = await response.json();
+                console.log("Wishlist API response:", data);
+                
+                if (data.responseBody?.data && Array.isArray(data.responseBody.data)) {
+                    // Extract product data from wishlist items
+                    const products = data.responseBody.data.map(wishlistItem => {
+                        // If wishlist item has a product property, use it
+                        if (wishlistItem.product) {
+                            return wishlistItem.product;
+                        }
+                        // If wishlist item is the product itself, use it directly
+                        return wishlistItem;
+                    }).filter(product => product && product.id); // Filter out invalid products
+                    
+                    console.log("Extracted products:", products);
+                    setWishlistProducts(products);
+                } else {
+                    console.log("No wishlist data found");
+                    setWishlistProducts([]);
+                }
+            } else if (response.status === 401) {
+                setError("Please log in to view your wishlist");
+                setWishlistProducts([]);
+            } else {
+                console.error("Wishlist API error:", response.status, response.statusText);
+                setError("Failed to load wishlist products");
+                setWishlistProducts([]);
+            }
+        } catch (error) {
+            console.error("Error fetching wishlist products:", error);
+            setError("Network error. Please try again.");
+            setWishlistProducts([]);
+        }
+    };
 
     useEffect(() => {
-        const fetchBaggeyProducts = async () => {
+        const loadWishlistProducts = async () => {
             try {
                 setLoading(true);
                 setError("");
-
-                // هات كل الـ Subcategories
-                const subcategoriesResponse = await fetch(
-                    `${backendUrl}/api/subcategories?isActive=true&includeDeleted=false`
-                );
-                const subcategoriesData = await subcategoriesResponse.json();
-
-                if (subcategoriesResponse.ok && subcategoriesData.responseBody) {
-                    const subcategories = subcategoriesData.responseBody.data || [];
-
-                    // دور على Subcategory اسمها Baggey
-                    const baggeySubcategory = subcategories.find(
-                        sub => sub.name?.toLowerCase() === "baggey"
-                    );
-
-                    if (baggeySubcategory) {
-                        setSubcategory(baggeySubcategory);
-
-                        // هات المنتجات الخاصة بالـ Baggey
-                        const productsResponse = await fetch(
-                            `${backendUrl}/api/products?subCategoryId=${baggeySubcategory.id}&isActive=true&includeDeleted=false&page=1&pageSize=50`
-                        );
-                        const productsData = await productsResponse.json();
-
-                        if (
-                            productsResponse.ok &&
-                            Array.isArray(productsData.responseBody?.data)
-                        ) {
-                            setBaggeyProducts(productsData.responseBody.data);
-                        } else {
-                            setBaggeyProducts([]);
-                        }
-                    } else {
-                        setError("Baggey subcategory not found");
-                        setBaggeyProducts([]);
-                    }
-                } else {
-                    setError(subcategoriesData.message || "Failed to load subcategories");
-                }
+                await fetchWishlistProducts();
             } catch (err) {
-                console.error("Error fetching Baggey products:", err);
-                setError("Network error. Please try again.");
+                console.error("Error loading wishlist products:", err);
+                setError("Failed to load wishlist products");
             } finally {
                 setLoading(false);
             }
         };
 
-        fetchBaggeyProducts();
+        loadWishlistProducts();
     }, [backendUrl]);
 
     return (
@@ -97,26 +114,46 @@ const ReelBaggey = () => {
                     {/* Subcategory Header */}
                     <div className="text-center mb-6 sm:mb-8">
                         <h1 className="text-xl sm:text-2xl md:text-3xl tracking-wide mb-3 sm:mb-4 uppercase">
-                            <Title text1={t('REEL')} text2={t('BAGGEY_COLLECTION')} />
+                            <Title text1={t('MY')} text2={t('WISHLIST')} />
                         </h1>
                         <p className="text-gray-600 text-sm sm:text-base max-w-3xl mx-auto px-4">
-                            {t('BAGGEY_DESCRIPTION')}
+                            {t('WISHLIST_PRODUCTS_DESCRIPTION')}
                         </p>
                     </div>
 
+                    {/* Debug Info */}
+                    <div className="text-center text-xs text-gray-400 mb-4">
+                        Debug: {wishlistProducts.length} products found
+                    </div>
+
                     {/* Products Grid */}
-                    {baggeyProducts.length > 0 ? (
+                    {wishlistProducts.length > 0 ? (
                         <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4 md:gap-6">
-                            {baggeyProducts.slice(0, 8).map((product) => (
-                                <ProductCard
-                                    key={product.id}
-                                    product={product}
-                                />
-                            ))}
+                            {wishlistProducts.slice(0, 8).map((product) => {
+                                console.log("Rendering product:", product);
+                                return (
+                                    <ProductCard
+                                        key={product.id}
+                                        product={product}
+                                    />
+                                );
+                            })}
                         </div>
                     ) : (
                         <div className="text-center text-gray-500 my-8">
-                            <p className="text-sm sm:text-base">{t('NO_BAGGEY_PRODUCTS')}</p>
+                            <div className="max-w-md mx-auto">
+                                <div className="text-6xl mb-4">💝</div>
+                                <h3 className="text-lg font-medium mb-2">Your wishlist is empty</h3>
+                                <p className="text-sm sm:text-base mb-4">
+                                    {t('NO_WISHLIST_PRODUCTS') || 'Start adding products to your wishlist to see them here.'}
+                                </p>
+                                <a 
+                                    href="/" 
+                                    className="inline-block bg-black text-white px-6 py-2 rounded-md hover:bg-gray-800 transition-colors"
+                                >
+                                    Continue Shopping
+                                </a>
+                            </div>
                         </div>
                     )}
                 </>
