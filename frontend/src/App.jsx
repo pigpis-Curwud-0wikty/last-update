@@ -33,6 +33,7 @@ import ScrollToTopButton from "./components/ScrollToTopButton";
 import Wishlist from "./pages/Wishlist";
 import Erroe404 from "./pages/Erroe404";
 import { ShopContext } from "./context/ShopContext";
+import ShopContextProvider from "./context/ShopContext";
 
 // Component to scroll to top on route change
 const ScrollToTop = () => {
@@ -76,7 +77,7 @@ const App = () => {
   }
 
   return (
-    <>
+    <ShopContextProvider>
       <div>
         <ScrollToTop />
         {location.pathname === "/" ? <Navbar /> : <NavbarPage />}
@@ -120,7 +121,7 @@ const App = () => {
         <Footer />
         <ScrollToTopButton />
       </div>
-    </>
+    </ShopContextProvider>
   );
 };
 

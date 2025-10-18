@@ -92,25 +92,31 @@ class WishlistService {
    * @param {Function} refreshTokenFn - Function to refresh the token
    * @returns {Promise<Object>} - API response
    */
-  async getWishlist(page = 1, pageSize = 20, refreshTokenFn) {
+  async getWishlist(page = 1, pageSize = 20, refreshTokenFn,all=false) {
     try {
+      let url=`${this.backendUrl}/api/Wishlist?all=${all}&page=${page}&pageSize=${pageSize}`
       const response = await fetchWithTokenRefresh(
-        `${this.backendUrl}/api/Wishlist?page=${page}&pageSize=${pageSize}`,
+        url,
+
         {
           method: 'GET',
           headers: getAuthHeaders(),
         },
         refreshTokenFn
       );
+      console.log(url)
 
       const data = await response.json();
       console.log("Raw wishlist API response:", data);
       
       if (response.ok && data.responseBody) {
         console.log("Wishlist responseBody:", data.responseBody);
+        // Ensure we're properly extracting the data array from the response
+        const wishlistData = data.responseBody.data || [];
+        console.log("Extracted wishlist data:", wishlistData);
         return {
           success: true,
-          data: data.responseBody.data || [],
+          data: wishlistData,
           message: data.responseBody.message || 'Wishlist retrieved successfully'
         };
       } else {
@@ -134,39 +140,7 @@ class WishlistService {
    * @param {Function} refreshTokenFn - Function to refresh the token
    * @returns {Promise<Object>} - API response
    */
-  async isInWishlist(productId, refreshTokenFn) {
-    try {
-      const response = await fetchWithTokenRefresh(
-        `${this.backendUrl}/api/Wishlist/contains/${productId}`,
-        {
-          method: 'GET',
-          headers: getAuthHeaders(),
-        },
-        refreshTokenFn
-      );
 
-      const data = await response.json();
-      
-      if (response.ok && data.responseBody) {
-        return {
-          success: true,
-          data: data.responseBody.data,
-          message: data.responseBody.message || 'Wishlist status retrieved'
-        };
-      } else {
-        return {
-          success: false,
-          error: data.responseBody?.message || data.message || 'Failed to check wishlist status'
-        };
-      }
-    } catch (error) {
-      console.error('Error checking wishlist status:', error);
-      return {
-        success: false,
-        error: 'Error checking wishlist status'
-      };
-    }
-  }
 
   /**
    * Clear entire wishlist

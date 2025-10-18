@@ -45,7 +45,12 @@ const ProductCard = ({ product }) => {
 
       {/* Wishlist button */}
       <div className="absolute top-2 left-2 z-10">
-        <WishlistButton productId={product.id} size="small" variant="default" />
+        <WishlistButton 
+          productId={product.id} 
+          size="small" 
+          variant="default" 
+          isInWishlist={product.isInWishlist}
+        />
       </div>
 
       {/* Product image with hover effect */}

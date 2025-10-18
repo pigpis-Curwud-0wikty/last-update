@@ -12,16 +12,21 @@ const Wishlist = () => {
     removeFromWishlist, 
     addToCart, 
     clearWishlist,
+    fetchWishlist,
     currency,
     user 
   } = useContext(ShopContext);
 
   const [isRemoving, setIsRemoving] = useState({});
 
-  // Redirect to login if not authenticated
+
   useEffect(() => {
     if (!user) {
       window.location.href = '/login';
+    } else {
+      console.log('Fetching wishlist on page load...');
+      fetchWishlist();
+      console.log('Current wishlist items:', wishlistItems);
     }
   }, [user]);
 
@@ -76,9 +81,25 @@ const Wishlist = () => {
         {/* Header */}
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-gray-900 mb-2">{t("WISHLIST")}</h1>
-          <p className="text-gray-600">
-            {wishlistItems.length} {wishlistItems.length === 1 ? 'item' : t("WISHLIST_ITEMS")}
-          </p>
+          <div className="flex items-center justify-between">
+            <p className="text-gray-600">
+              {wishlistItems.length} {wishlistItems.length === 1 ? 'item' : t("WISHLIST_ITEMS")}
+            </p>
+            <button 
+              onClick={() => fetchWishlist()} 
+              className="text-blue-600 hover:text-blue-800 underline text-sm flex items-center"
+              disabled={wishlistLoading}
+            >
+              {wishlistLoading ? (
+                <span className="flex items-center">
+                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-500 mr-2"></div>
+                  Refreshing...
+                </span>
+              ) : (
+                <span>Refresh Wishlist</span>
+              )}
+            </button>
+          </div>
         </div>
 
 
