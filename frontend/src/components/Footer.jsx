@@ -75,7 +75,7 @@ const Footer = () => {
 
           <div className="w-full md:w-auto text-right md:text-left text-gray-500">
             <span>© 2025 R&S , All rights reserved. </span>
-            <a href="#" className="underline hover:text-gray-300">Powered by Ziad</a>
+            <a href="/about" className="underline hover:text-gray-300">Powered by Ziad & Omar</a>
           </div>
 
         </div>

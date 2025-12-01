@@ -146,9 +146,8 @@ const Navbar = () => {
         variants={navbarVariants}
         onMouseEnter={() => setHovered(true)}
         onMouseLeave={() => setHovered(false)}
-        className={`w-full transition-all duration-300 ${
-          scrolled ? "shadow-md" : ""
-        } border-b border-gray-300 flex items-center py-4 font-medium px-4 sm:px-[2vw] md:px-[2vw] lg:px-[3vw]
+        className={`w-full transition-all duration-300 ${scrolled ? "shadow-md" : ""
+          } border-b border-gray-300 flex items-center py-3 font-medium px-4 sm:px-[2vw] md:px-[2vw] lg:px-[3vw]
         relative `}
       >
         {/* Background animation overlay */}
@@ -161,15 +160,13 @@ const Navbar = () => {
 
         {/* --- الروابط الرئيسية --- */}
         <ul
-          className={`hidden sm:flex gap-5 text-sm ${
-            scrolled || hovered ? "text-gray-700" : "text-white"
-          } flex-1`}
+          className={`hidden sm:flex gap-5 text-sm ${scrolled || hovered ? "text-gray-700" : "text-white"
+            } flex-1`}
         >
           <NavLink
             to="/"
             className={({ isActive }) =>
-              `flex flex-col items-center gap-1 group ${
-                isActive ? "font-bold" : ""
+              `flex flex-col items-center gap-1 group ${isActive ? "font-bold" : ""
               }`
             }
           >
@@ -209,11 +206,10 @@ const Navbar = () => {
                       {Array.isArray(categorySubcategories[cat.id]) &&
                         categorySubcategories[cat.id].length > 0 && (
                           <ul
-                            className={`absolute left-full top-0 w-64 bg-white shadow-lg transition-all duration-200 z-50 ${
-                              hoveredCategoryId === cat.id
-                                ? "opacity-100 visible"
-                                : "opacity-0 invisible"
-                            }`}
+                            className={`absolute left-full top-0 w-64 bg-white shadow-lg transition-all duration-200 z-50 ${hoveredCategoryId === cat.id
+                              ? "opacity-100 visible"
+                              : "opacity-0 invisible"
+                              }`}
                           >
                             {categorySubcategories[cat.id].map((sub) => (
                               <li key={sub.id}>
@@ -241,8 +237,7 @@ const Navbar = () => {
           <NavLink
             to="/policy"
             className={({ isActive }) =>
-              `flex flex-col items-center gap-1 group ${
-                isActive ? "font-bold" : ""
+              `flex flex-col items-center gap-1 group ${isActive ? "font-bold" : ""
               }`
             }
           >
@@ -256,9 +251,8 @@ const Navbar = () => {
           <Link to={"/"}>
             <img
               src={assets.logo}
-              className={`w-20 transition-opacity duration-300 ${
-                scrolled || hovered ? "opacity-100" : "opacity-0"
-              }`}
+              className={`w-20 transition-opacity duration-300 ${scrolled || hovered ? "opacity-100" : "opacity-0"
+                }`}
               alt="ImgLogo"
               style={{ pointerEvents: scrolled || hovered ? "auto" : "none" }}
             />
@@ -382,9 +376,8 @@ const Navbar = () => {
 
         {/* Sidebar menu for small screen */}
         <div
-          className={`absolute top-0 right-0 bottom-0 bg-white h-screen transition-all ${
-            visible ? "w-full" : "w-0"
-          }`}
+          className={`absolute top-0 right-0 bottom-0 bg-white h-screen transition-all ${visible ? "w-full" : "w-0"
+            }`}
         >
           <div className="flex flex-col text-gray-600">
             <div

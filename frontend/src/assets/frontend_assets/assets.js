@@ -55,7 +55,7 @@ import p_img51 from './p_img51.png'
 import p_img52 from './p_img52.png'
 
 
-import logo from './logo.jpg'
+import logo from './logo.png'
 import hero_img from './hero_img.png'
 import cart_icon from './cart_icon.png'
 import bin_icon from './bin_icon.png'
@@ -133,7 +133,7 @@ export const assets = {
     baggey6,
     baggey7,
     Joggers_img,
-    hero_banner_img 
+    hero_banner_img
 }
 
 export const products = [

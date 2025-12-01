@@ -134,7 +134,7 @@ const NavbarPage = () => {
       variants={navbarVariants}
       className={`fixed top-0 left-0 w-full z-50 transition-all duration-300 
         bg-white shadow-md
-       flex items-center py-5 font-medium px-4 sm:px-[2vw] md:px-[2vw] lg:px-[3vw]
+       flex items-center py-3 font-medium px-4 sm:px-[2vw] md:px-[2vw] lg:px-[3vw]
       border-b-1 border-white`}
       style={{ backdropFilter: "none" }}
     >
@@ -145,72 +145,70 @@ const NavbarPage = () => {
         <NavLink
           to="/"
           className={({ isActive }) =>
-            `flex flex-col items-center gap-1 group ${
-              isActive ? "font-bold" : ""
+            `flex flex-col items-center gap-1 group ${isActive ? "font-bold" : ""
             }`
           }
         >
           <p>{t("HOME")}</p>
           <span className="w-2/4 h-[2px] transition-all duration-300 bg-gray-700 group-hover:w-full group-hover:bg-gray-300 group-hover:opacity-100 opacity-0"></span>
         </NavLink>
-<div className="relative group">
-            <NavLink
-              to="/collection"
-              className="flex items-center gap-1 focus:outline-none"
-            >
-              SHOP <span className="ml-1">&#9662;</span>
-            </NavLink>
+        <div className="relative group">
+          <NavLink
+            to="/collection"
+            className="flex items-center gap-1 focus:outline-none"
+          >
+            SHOP <span className="ml-1">&#9662;</span>
+          </NavLink>
 
-            {/* Menu */}
-            <div className="absolute left-1/2 -translate-x-1/3 mt-2 w-80 bg-white shadow-lg z-[100] opacity-0 group-hover:opacity-100 pointer-events-none group-hover:pointer-events-auto transition-opacity duration-200">
-              <ul className="flex flex-col py-2">
-                {Array.isArray(categories) && categories.length > 0 ? (
-                  categories.map((cat) => (
-                    <li
-                      key={cat.id}
-                      className="relative"
-                      onMouseEnter={() => setHoveredCategoryId(cat.id)}
-                      onMouseLeave={() => setHoveredCategoryId(null)}
+          {/* Menu */}
+          <div className="absolute left-1/2 -translate-x-1/3 mt-2 w-80 bg-white shadow-lg z-[100] opacity-0 group-hover:opacity-100 pointer-events-none group-hover:pointer-events-auto transition-opacity duration-200">
+            <ul className="flex flex-col py-2">
+              {Array.isArray(categories) && categories.length > 0 ? (
+                categories.map((cat) => (
+                  <li
+                    key={cat.id}
+                    className="relative"
+                    onMouseEnter={() => setHoveredCategoryId(cat.id)}
+                    onMouseLeave={() => setHoveredCategoryId(null)}
+                  >
+                    <Link
+                      to={`/category/${cat.id}`}
+                      className="block px-6 py-3 hover:bg-gray-100 cursor-pointer text-gray-700 font-medium transition-colors duration-150"
                     >
-                      <Link
-                        to={`/category/${cat.id}`}
-                        className="block px-6 py-3 hover:bg-gray-100 cursor-pointer text-gray-700 font-medium transition-colors duration-150"
-                      >
-                        <div className="flex justify-between items-center">
-                          <span>{cat.name}</span>
-                        </div>
-                      </Link>
+                      <div className="flex justify-between items-center">
+                        <span>{cat.name}</span>
+                      </div>
+                    </Link>
 
-                      {/* Subcategories */}
-                      {Array.isArray(categorySubcategories[cat.id]) &&
-                        categorySubcategories[cat.id].length > 0 && (
-                          <ul
-                            className={`absolute left-full top-0 w-64 bg-white shadow-lg transition-all duration-200 z-50 ${
-                              hoveredCategoryId === cat.id ? "opacity-100 visible" : "opacity-0 invisible"
+                    {/* Subcategories */}
+                    {Array.isArray(categorySubcategories[cat.id]) &&
+                      categorySubcategories[cat.id].length > 0 && (
+                        <ul
+                          className={`absolute left-full top-0 w-64 bg-white shadow-lg transition-all duration-200 z-50 ${hoveredCategoryId === cat.id ? "opacity-100 visible" : "opacity-0 invisible"
                             }`}
-                          >
-                            {categorySubcategories[cat.id].map((sub) => (
-                              <li key={sub.id}>
-                                <Link
-                                  to={`/subcategory/${sub.id}`}
-                                  className="block px-6 py-3 hover:bg-gray-100 cursor-pointer text-gray-700 transition-colors duration-150"
-                                >
-                                  {sub.name}
-                                </Link>
-                              </li>
-                            ))}
-                          </ul>
-                        )}
-                    </li>
-                  ))
-                ) : (
-                  <li className="px-6 py-3 text-gray-500">
-                    No categories available
+                        >
+                          {categorySubcategories[cat.id].map((sub) => (
+                            <li key={sub.id}>
+                              <Link
+                                to={`/subcategory/${sub.id}`}
+                                className="block px-6 py-3 hover:bg-gray-100 cursor-pointer text-gray-700 transition-colors duration-150"
+                              >
+                                {sub.name}
+                              </Link>
+                            </li>
+                          ))}
+                        </ul>
+                      )}
                   </li>
-                )}
-              </ul>
-            </div>
+                ))
+              ) : (
+                <li className="px-6 py-3 text-gray-500">
+                  No categories available
+                </li>
+              )}
+            </ul>
           </div>
+        </div>
         <NavLink
           to="/policy"
           className={({ isActive }) =>
@@ -316,7 +314,7 @@ const NavbarPage = () => {
           alt=""
           onClick={() => setvisible(true)}
         />
-        
+
       </div>
 
       {/* Sidebar menu for small screen */}
