@@ -1,5 +1,6 @@
 import React from "react";
 import FormInput from "./FormInput";
+import { toast } from "react-toastify"; // Make sure react-toastify is installed and configured
 
 const ProductForm = ({
   formData,
@@ -29,17 +30,45 @@ const ProductForm = ({
     status,
   } = formData;
 
+  const validateForm = () => {
+    if (!name) return "Product name is required";
+    if (!price) return "Price is required";
+    if (!subcategoryid) return "Subcategory is required";
+    if (!fitType) return "Fit type is required";
+    if (!gender) return "Gender is required";
+    if (!description) return "Description is required";
+    if (!mainImage) return "Main image is required";
+    return null;
+  };
+
+  const handleFormSubmit = (e) => {
+    e.preventDefault();
+    const error = validateForm();
+    if (error) {
+      toast.error(error);
+      return;
+    }
+    handleSubmit(e);
+  };
+
   return (
-    <form onSubmit={handleSubmit} className="flex flex-col gap-4 bg-white p-6 rounded-lg shadow">
+    <form
+      onSubmit={handleFormSubmit}
+      className="flex flex-col gap-4 bg-white p-6 rounded-lg shadow"
+    >
       <h2 className="text-xl font-semibold mb-2">Product Information</h2>
-      
+
       {/* Main Image Upload */}
       <div>
         <p className="mb-2">Upload Main Image</p>
         {mainImage && (
           <div className="mb-2">
             <img
-              src={typeof mainImage === "string" ? mainImage : URL.createObjectURL(mainImage)}
+              src={
+                typeof mainImage === "string"
+                  ? mainImage
+                  : URL.createObjectURL(mainImage)
+              }
               alt="Preview"
               className="w-32 h-32 object-cover rounded"
             />
@@ -49,7 +78,6 @@ const ProductForm = ({
           type="file"
           name="mainImage"
           value={mainImage}
-          
           onChange={(e) => handleFileChange("mainImage", e.target.files[0])}
           accept="image/*"
           required={!mainImage}
@@ -63,7 +91,9 @@ const ProductForm = ({
           type="file"
           name="additionalImages"
           value={additionalImages}
-          onChange={(e) => handleFileChange("additionalImages", Array.from(e.target.files))}
+          onChange={(e) =>
+            handleFileChange("additionalImages", Array.from(e.target.files))
+          }
           multiple
           accept="image/*"
         />
@@ -128,7 +158,6 @@ const ProductForm = ({
           placeholder="Select Gender"
           required
         />
-
       </div>
 
       {/* Description */}
@@ -150,23 +179,18 @@ const ProductForm = ({
           name="status"
           value={status || (isActive ? "active" : "inactive")}
           onChange={(e) => {
-            // Update both status and isActive fields
             const newStatus = e.target.value;
             const newIsActive = newStatus === "active";
-            
-            // Create a synthetic event object to pass to handleInputChange
+
             const syntheticEvent = {
               target: {
                 name: "isActive",
                 type: "checkbox",
-                checked: newIsActive
-              }
+                checked: newIsActive,
+              },
             };
-            
-            // First update the status field
+
             handleInputChange(e);
-            
-            // Then update the isActive field to keep them in sync
             handleInputChange(syntheticEvent);
           }}
           options={[
@@ -183,23 +207,23 @@ const ProductForm = ({
             name="inStock"
             checked={inStock}
             onChange={(e) => {
-              // Update inStock field
               handleInputChange(e);
-              
-              // If quantity is not set and inStock is checked, set a default quantity
-              if (e.target.checked && (!formData.quantity || formData.quantity === 0)) {
+              if (
+                e.target.checked &&
+                (!formData.quantity || formData.quantity === 0)
+              ) {
                 const syntheticEvent = {
-                  target: {
-                    name: "quantity",
-                    value: "1"
-                  }
+                  target: { name: "quantity", value: "1" },
                 };
                 handleInputChange(syntheticEvent);
               }
             }}
             className="mr-2"
           />
-          <label htmlFor="inStock" className="text-sm font-medium text-gray-700">
+          <label
+            htmlFor="inStock"
+            className="text-sm font-medium text-gray-700"
+          >
             In Stock
           </label>
         </div>
@@ -228,6 +252,7 @@ const ProductForm = ({
         >
           {loading ? loadingButtonText : submitButtonText}
         </button>
+
         {resetForm && (
           <button
             type="button"
@@ -237,6 +262,7 @@ const ProductForm = ({
             Reset Form
           </button>
         )}
+
         {previewProducts && (
           <button
             type="button"

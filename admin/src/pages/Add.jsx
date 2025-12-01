@@ -10,7 +10,38 @@ const Add = ({ token }) => {
   const searchParams = new URLSearchParams(location.search);
   const editId = searchParams.get("edit");
   const [loading, setLoading] = useState(false);
-  
+
+  // Helper: extract detailed API error messages
+  const extractApiErrors = (err, fallbackMessage) => {
+    // Check for responseBody structure from the user's example
+    const rb = err?.response?.data?.responseBody;
+
+    // 1. Check for messages array in errors object
+    if (rb?.errors?.messages && Array.isArray(rb.errors.messages) && rb.errors.messages.length > 0) {
+      return rb.errors.messages.join("\n");
+    }
+
+    // 2. Check for other common error structures
+    const modelState = rb?.errors?.modelState || rb?.errors?.ModelState || rb?.errors?.details;
+    if (modelState && typeof modelState === "object") {
+      const msgs = [];
+      Object.values(modelState).forEach((v) => {
+        if (Array.isArray(v)) msgs.push(...v);
+        else if (typeof v === "string") msgs.push(v);
+      });
+      if (msgs.length) return msgs.join("\n");
+    }
+
+    // 3. Fallbacks
+    return (
+      rb?.message ||
+      err?.response?.data?.message ||
+      err?.message ||
+      fallbackMessage ||
+      "Operation failed"
+    );
+  };
+
   // Form data state
   const [formData, setFormData] = useState({
     name: "",
@@ -57,7 +88,7 @@ const Add = ({ token }) => {
 
     fetchSubcategories();
   }, [token]);
-  
+
   // Prefill form when editing
   useEffect(() => {
     const loadForEdit = async () => {
@@ -93,7 +124,7 @@ const Add = ({ token }) => {
       [name]: type === "checkbox" ? checked : value
     }));
   };
-  
+
   // Handle file changes
   const handleFileChange = (fieldName, files) => {
     setFormData(prev => ({
@@ -193,7 +224,8 @@ const Add = ({ token }) => {
       resetForm();
     } catch (err) {
       console.error("❌ Error adding product:", err.response?.data || err.message);
-      toast.error(err.response?.data?.message || "Failed to add product");
+      const msg = extractApiErrors(err, "Failed to add product");
+      toast.error(msg);
     } finally {
       setLoading(false);
     }
@@ -228,7 +260,7 @@ const Add = ({ token }) => {
   return (
     <div className="p-4">
       <h2 className="text-xl font-semibold mb-4">{editId ? "Update Product" : "Add New Product"}</h2>
-      
+
       <ProductForm
         formData={formData}
         handleInputChange={handleInputChange}

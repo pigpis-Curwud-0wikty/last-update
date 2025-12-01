@@ -24,16 +24,12 @@ const API = {
     // Create a new order
     create: async (orderData, token) => {
       try {
-        const res = await axios.post(
-          `${backendUrl}/api/Order`,
-          orderData,
-          {
-            headers: {
-              "Content-Type": "application/json",
-              Authorization: `Bearer ${token}`,
-            },
-          }
-        );
+        const res = await axios.post(`${backendUrl}/api/Order`, orderData, {
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+        });
 
         return res.data;
       } catch (err) {
@@ -41,18 +37,15 @@ const API = {
         throw err;
       }
     },
-    
+
     // Get order by ID
     getById: async (orderId, token) => {
       try {
-        const res = await axios.get(
-          `${backendUrl}/api/Order/${orderId}`,
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          }
-        );
+        const res = await axios.get(`${backendUrl}/api/Order/${orderId}`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
 
         return res.data;
       } catch (err) {
@@ -61,20 +54,17 @@ const API = {
       }
     },
   },
-  
+
   // Customer Address APIs
   customerAddresses: {
     // Get all customer addresses
     getAll: async (token) => {
       try {
-        const res = await axios.get(
-          `${backendUrl}/api/CustomerAddress`,
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          }
-        );
+        const res = await axios.get(`${backendUrl}/api/CustomerAddress`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
 
         return res.data;
       } catch (err) {
@@ -83,7 +73,7 @@ const API = {
       }
     },
   },
-  
+
   // Product APIs
   products: {
     // Create a new product
@@ -107,19 +97,16 @@ const API = {
         throw err; // ⬅️ كمان مهم عشان الـ Add.jsx يعرف فيه Error
       }
     },
-    
+
     // Get all products
     getAll: async (token) => {
       try {
-        const res = await axios.get(
-          `${backendUrl}/api/Products`,
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-            params: { page: 1, pageSize: 100 }, // Get a reasonable number of products
-          }
-        );
+        const res = await axios.get(`${backendUrl}/api/Products`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+          params: { page: 1, pageSize: 100 }, // Get a reasonable number of products
+        });
 
         return res.data;
       } catch (err) {
@@ -176,7 +163,7 @@ const API = {
             minSize: filters.minSize ? parseInt(filters.minSize) : 0,
             maxSize: filters.maxSize ? parseInt(filters.maxSize) : 0,
             page: page,
-            pageSize: pageSize
+            pageSize: pageSize,
           };
 
           try {
@@ -317,7 +304,13 @@ const API = {
         const response = await axios.put(
           `${backendUrl}/api/products/${productId}`,
           productData,
-          { headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json-patch+json", Accept: "text/plain" } }
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+              "Content-Type": "application/json-patch+json",
+              Accept: "text/plain",
+            },
+          }
         );
         return response.data;
       } catch (error) {
@@ -424,6 +417,16 @@ const API = {
         );
         throw error;
       }
+    },
+    removeDiscount: async (productId, token) => {
+      return await axios.delete(
+        `${backendUrl}/api/Products/${productId}/Discount`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
     },
   },
 
@@ -744,7 +747,9 @@ const API = {
     add: async (productId, variantData, token) => {
       try {
         // API expects an array of variants; wrap single object if needed
-        const payload = Array.isArray(variantData) ? variantData : [variantData];
+        const payload = Array.isArray(variantData)
+          ? variantData
+          : [variantData];
         const response = await axios.post(
           `${backendUrl}/api/Products/${productId}/Variants`,
           payload,
@@ -950,12 +955,12 @@ const API = {
   //       const response = await axios.post(
   //         `${backendUrl}/api/Order`,
   //         orderData,
-  //         { 
-  //           headers: { 
+  //         {
+  //           headers: {
   //             Authorization: `Bearer ${token}`,
   //             "Content-Type": "application/json",
   //             Accept: "text/plain"
-  //           } 
+  //           }
   //         }
   //       );
   //       return response.data;
@@ -970,7 +975,7 @@ const API = {
   //     try {
   //       const response = await axios.get(
   //         `${backendUrl}/api/Order`,
-  //         { 
+  //         {
   //           headers: { Authorization: `Bearer ${token}` },
   //           params: params
   //         }
