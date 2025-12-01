@@ -226,7 +226,7 @@ const PlaceOrder = () => {
 
       if (orderResponse.data.statuscode === 201 || orderResponse.data.statuscode === 200) {
         const orderData = orderResponse.data.responseBody?.data;
-          const orderNumber = orderData?.orderNumber;
+        const orderNumber = orderData?.orderNumber;
 
         console.log("Order created successfully. Order data:", orderData);
         console.log("Order number:", orderNumber);
@@ -301,7 +301,7 @@ const PlaceOrder = () => {
           paymentDetails: {
             walletPhoneNumber: walletPhoneNumber || "",
             paymentMethod: methodValue, // Use validated enum value
-            currency: "USD",
+            currency: "EGP",
             notes: paymentNotes || ""
           }
         };
@@ -519,8 +519,8 @@ const PlaceOrder = () => {
                 <div
                   key={method.id}
                   className={`border rounded-md p-3 cursor-pointer transition-colors ${selectedPaymentMethod === method.id
-                      ? "border-green-500 bg-green-50"
-                      : "border-gray-300 hover:border-gray-400"
+                    ? "border-green-500 bg-green-50"
+                    : "border-gray-300 hover:border-gray-400"
                     }`}
                 >
                   <div
@@ -531,8 +531,8 @@ const PlaceOrder = () => {
                     <p className="text-sm text-gray-500">{method.paymentMethod}</p>
                   </div>
                   <div className={`w-4 h-4 rounded-full border-2 ${selectedPaymentMethod === method.id
-                      ? "border-green-500 bg-green-500"
-                      : "border-gray-300"
+                    ? "border-green-500 bg-green-500"
+                    : "border-gray-300"
                     }`}>
                     {selectedPaymentMethod === method.id && (
                       <div className="w-full h-full rounded-full bg-white scale-50"></div>

@@ -32,6 +32,7 @@ import RequestPasswordReset from "./pages/RequestPasswordReset";
 import ScrollToTopButton from "./components/ScrollToTopButton";
 import Wishlist from "./pages/Wishlist";
 import Erroe404 from "./pages/Erroe404";
+import GoogleCallback from "./pages/GoogleCallback";
 import { ShopContext } from "./context/ShopContext";
 import ShopContextProvider from "./context/ShopContext";
 
@@ -92,6 +93,8 @@ const App = () => {
           <Route path="/contact" element={<Contact />} />
           <Route path="/login" element={<Login />} />
           <Route path="/signup" element={<SignUp />} />
+          <Route path="/google-callback" element={<GoogleCallback />} />
+          <Route path="/google-callback/auth-success" element={<GoogleCallback />} />
           <Route path="/orders" element={<Orders />} />
           <Route path="/place-order" element={<PlaceOrder />} />
           <Route path="/product/:productId" element={<Product />} />

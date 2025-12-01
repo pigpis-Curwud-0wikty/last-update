@@ -2,9 +2,10 @@ import React, { useState, useContext } from 'react'
 import { motion } from 'framer-motion'
 import { Link, useNavigate } from 'react-router-dom'
 import { ShopContext } from '../context/ShopContext';
+import authService from '../services/authService';
 
 const SignUp = () => {
-    const { backendUrl} = useContext(ShopContext);
+    const { backendUrl } = useContext(ShopContext);
     const [formData, setFormData] = useState({
         name: '',
         userName: '',
@@ -34,45 +35,45 @@ const SignUp = () => {
             setError('Name must start and end with a letter and may contain spaces, hyphens, and commas in between');
             return false;
         }
-        
+
         // Username validation
         if (!formData.userName.match(/^(?![_\.])[a-zA-Z0-9._]+(?<![_\.])$/)) {
             setError('Username must contain only letters, numbers, dots, and underscores, and must not start or end with a dot or underscore');
             return false;
         }
-        
+
         // Phone number validation
         if (!formData.phoneNumber.match(/^01[0-9]{9}$/)) {
             setError('Phone number must be a valid 11-digit Egyptian number starting with 01');
             return false;
         }
-        
+
         // Age validation
         const age = parseInt(formData.age);
         if (isNaN(age) || age < 18 || age > 100) {
             setError('Age must be between 18 and 100');
             return false;
         }
-        
+
         // Email validation
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
         if (!emailRegex.test(formData.email)) {
             setError('Please enter a valid email address');
             return false;
         }
-        
+
         // Password validation
         if (formData.password.length < 6) {
             setError('Password must be at least 6 characters long');
             return false;
         }
-        
+
         // Confirm password validation
         if (formData.password !== formData.confirmPassword) {
             setError('Confirm password does not match the password');
             return false;
         }
-        
+
         return true;
     };
 
@@ -112,9 +113,9 @@ const SignUp = () => {
                 }, 2000);
             } else {
                 // Handle Fashion-main API error response format
-                const errorMessage = data.responseBody?.message || 
-                                   (data.responseBody?.error?.message) || 
-                                   'Failed to register. Please try again.';
+                const errorMessage = data.responseBody?.message ||
+                    (data.responseBody?.error?.message) ||
+                    'Failed to register. Please try again.';
                 setError(errorMessage);
             }
         } catch (error) {
@@ -167,84 +168,102 @@ const SignUp = () => {
                 </motion.div>
             )}
 
-            <input 
-                type="text" 
+            <input
+                type="text"
                 name="name"
                 value={formData.name}
                 onChange={handleInputChange}
-                className='outline-none w-full border-2 border-gray-300 py-2 px-3 rounded-md focus:border-gray-600 transition-colors' 
-                placeholder='Enter your Full Name' 
-                required 
+                className='outline-none w-full border-2 border-gray-300 py-2 px-3 rounded-md focus:border-gray-600 transition-colors'
+                placeholder='Enter your Full Name'
+                required
             />
-            <input 
-                type="text" 
+            <input
+                type="text"
                 name="userName"
                 value={formData.userName}
                 onChange={handleInputChange}
-                className='outline-none w-full border-2 border-gray-300 py-2 px-3 rounded-md focus:border-gray-600 transition-colors' 
-                placeholder='Enter your Username' 
-                required 
+                className='outline-none w-full border-2 border-gray-300 py-2 px-3 rounded-md focus:border-gray-600 transition-colors'
+                placeholder='Enter your Username'
+                required
             />
-            <input 
-                type="tel" 
+            <input
+                type="tel"
                 name="phoneNumber"
                 value={formData.phoneNumber}
                 onChange={handleInputChange}
-                className='outline-none w-full border-2 border-gray-300 py-2 px-3 rounded-md focus:border-gray-600 transition-colors' 
-                placeholder='Enter your Phone Number (e.g., 01xxxxxxxxx)' 
-                required 
+                className='outline-none w-full border-2 border-gray-300 py-2 px-3 rounded-md focus:border-gray-600 transition-colors'
+                placeholder='Enter your Phone Number (e.g., 01xxxxxxxxx)'
+                required
             />
-            <input 
-                type="number" 
+            <input
+                type="number"
                 name="age"
                 value={formData.age}
                 onChange={handleInputChange}
-                className='outline-none w-full border-2 border-gray-300 py-2 px-3 rounded-md focus:border-gray-600 transition-colors' 
-                placeholder='Enter your Age (18-100)' 
+                className='outline-none w-full border-2 border-gray-300 py-2 px-3 rounded-md focus:border-gray-600 transition-colors'
+                placeholder='Enter your Age (18-100)'
                 min="18"
                 max="100"
-                required 
+                required
             />
-            <input 
-                type="email" 
+            <input
+                type="email"
                 name="email"
                 value={formData.email}
                 onChange={handleInputChange}
-                className='outline-none w-full border-2 border-gray-300 py-2 px-3 rounded-md focus:border-gray-600 transition-colors' 
-                placeholder='Enter your Email' 
-                required 
+                className='outline-none w-full border-2 border-gray-300 py-2 px-3 rounded-md focus:border-gray-600 transition-colors'
+                placeholder='Enter your Email'
+                required
             />
-            <input 
-                type="password" 
+            <input
+                type="password"
                 name="password"
                 value={formData.password}
                 onChange={handleInputChange}
-                className='outline-none w-full border-2 border-gray-300 py-2 px-3 rounded-md focus:border-gray-600 transition-colors' 
-                placeholder='Enter your Password' 
-                required 
+                className='outline-none w-full border-2 border-gray-300 py-2 px-3 rounded-md focus:border-gray-600 transition-colors'
+                placeholder='Enter your Password'
+                required
             />
-            <input 
-                type="password" 
+            <input
+                type="password"
                 name="confirmPassword"
                 value={formData.confirmPassword}
                 onChange={handleInputChange}
-                className='outline-none w-full border-2 border-gray-300 py-2 px-3 rounded-md focus:border-gray-600 transition-colors' 
-                placeholder='Confirm your Password' 
-                required 
-            />                
+                className='outline-none w-full border-2 border-gray-300 py-2 px-3 rounded-md focus:border-gray-600 transition-colors'
+                placeholder='Confirm your Password'
+                required
+            />
             <div className='w-full flex justify-between text-sm mt-[-8px]'>
                 <p className='cursor-pointer'>Already have an account? <Link to="/login" className='hover:text-gray-600 hover:underline transition-all duration-300'>Login</Link></p>
             </div>
-            <button 
+            <button
                 type="submit"
                 disabled={loading}
-                className={`w-full font-light py-2 px-8 mt-4 border border-black transition-all duration-300 cursor-pointer ${
-                    loading 
-                        ? 'bg-gray-300 text-gray-500 cursor-not-allowed' 
+                className={`w-full font-light py-2 px-8 mt-4 border border-black transition-all duration-300 cursor-pointer ${loading
+                        ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
                         : 'bg-black text-white hover:bg-white hover:text-black'
-                }`}
+                    }`}
             >
                 {loading ? 'Registering...' : 'Sign Up'}
+            </button>
+
+            <div className="w-full flex items-center justify-between mt-4">
+                <hr className="w-full border-gray-300" />
+                <span className="px-2 text-gray-500 text-sm">OR</span>
+                <hr className="w-full border-gray-300" />
+            </div>
+
+            <button
+                type="button"
+                onClick={() => authService.initiateGoogleLogin()}
+                className="w-full flex items-center justify-center gap-2 py-2 px-8 border border-gray-300 rounded-md hover:bg-gray-50 transition-all duration-300 mt-2"
+            >
+                <img
+                    src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg"
+                    alt="Google"
+                    className="w-5 h-5"
+                />
+                <span className="text-gray-700 font-medium">Sign up with Google</span>
             </button>
         </motion.form>
     )

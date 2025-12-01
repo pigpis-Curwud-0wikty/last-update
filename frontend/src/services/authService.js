@@ -116,6 +116,12 @@ class AuthService {
     const token = localStorage.getItem("token");
     return token && token.length > 10;
   }
+
+  initiateGoogleLogin() {
+    const backendUrl = "https://fashion-v1.runasp.net"; // Or import from config/context
+    const returnUrl = `${window.location.origin}/google-callback`;
+    window.location.href = `${backendUrl}/api/ExternalLogin/Login?provider=Google&returnUrl=${encodeURIComponent(returnUrl)}`;
+  }
 }
 
 const authService = new AuthService();
