@@ -1,12 +1,13 @@
-import React, { useEffect, useState } from 'react'
-import { useContext } from 'react'
+import React, { useEffect, useState, useContext } from 'react'
 import { ShopContext } from '../context/ShopContext'
 import Title from '../components/Title'
 import axios from 'axios'
 import { toast } from 'react-toastify'
+import { useNavigate } from 'react-router-dom'
 
 const Orders = () => {
   const { backendUrl, token, currency } = useContext(ShopContext);
+  const navigate = useNavigate();
 
   const [orderData, setOrderData] = useState([]);
   const [filteredOrders, setFilteredOrders] = useState([]);
@@ -16,7 +17,7 @@ const Orders = () => {
   const [modalLoading, setModalLoading] = useState(false);
   const [statusFilter, setStatusFilter] = useState('All');
   const [sortOrder, setSortOrder] = useState('newest');
-  
+
   // Status code mapping for numeric statuses
   const statusMap = {
     0: 'Pending Payment',
@@ -45,7 +46,7 @@ const Orders = () => {
   // Helper function to get status color class
   const getStatusColorClass = (status) => {
     const statusStr = typeof status === 'string' ? status.toLowerCase() : statusMap[status]?.toLowerCase() || '';
-    
+
     if (statusStr.includes('delivered') || statusStr.includes('complete')) {
       return 'bg-green-100 text-green-800';
     } else if (statusStr.includes('shipped')) {
@@ -67,7 +68,7 @@ const Orders = () => {
       }
 
       console.log('Loading order data with status filter:', status);
-      
+
       // Build query parameters
       let queryParams = 'page=1&pageSize=20';
       if (status !== 'All') {
@@ -186,11 +187,11 @@ const Orders = () => {
     try {
       setModalLoading(true);
       setShowModal(true);
-      
+
       const response = await axios.get(`${backendUrl}/api/Order/number/${orderNumber}`, {
         headers: { 'Authorization': `Bearer ${token}` }
       });
-      
+
       const orderDetails = response.data?.responseBody?.data;
       setSelectedOrderDetails(orderDetails);
     } catch (error) {
@@ -200,6 +201,11 @@ const Orders = () => {
     } finally {
       setModalLoading(false);
     }
+  };
+
+  // Handle Pay button click
+  const handlePayClick = (order) => {
+    navigate(`/payment/${order.orderNumber}`);
   };
 
   // Close modal
@@ -217,10 +223,10 @@ const Orders = () => {
   useEffect(() => {
     console.log('Filter/Sort effect triggered with statusFilter:', statusFilter);
     console.log('Current orderData length:', orderData.length);
-    
+
     if (orderData.length > 0) {
       let result = [...orderData];
-      
+
       // Apply status filter
       if (statusFilter !== 'All') {
         console.log('Filtering by status:', statusFilter);
@@ -231,14 +237,14 @@ const Orders = () => {
         });
         console.log('Filtered results count:', result.length);
       }
-      
+
       // Apply sorting
       if (sortOrder === 'newest') {
         result.sort((a, b) => new Date(b.date) - new Date(a.date));
       } else if (sortOrder === 'oldest') {
         result.sort((a, b) => new Date(a.date) - new Date(b.date));
       }
-      
+
       console.log('Final filtered results count:', result.length);
       setFilteredOrders(result);
     } else {
@@ -250,7 +256,7 @@ const Orders = () => {
   const handleStatusFilterChange = async (e) => {
     const newStatus = e.target.value;
     setStatusFilter(newStatus);
-    
+
     // Reload data with new filter
     await loadOrderData(newStatus);
   };
@@ -260,7 +266,7 @@ const Orders = () => {
       <div className='text-2xl mb-10'>
         <Title text1={'MY'} text2={'ORDERS'} />
       </div>
-      
+
       {/* Filter and Sort Controls */}
       <div className="flex flex-wrap justify-between items-center mb-6 gap-4">
         <div className="flex items-center gap-4">
@@ -303,7 +309,7 @@ const Orders = () => {
           {filteredOrders.length} {filteredOrders.length === 1 ? 'order' : 'orders'} found
         </div>
       </div>
-      
+
       <div>
         {loading ? (
           <div className="flex justify-center items-center py-10">
@@ -322,9 +328,9 @@ const Orders = () => {
           filteredOrders.map((item, index) => (
             <div key={index} className='py-4 border-t border-b border-gray-300 flex flex-col md:flex-row md:items-center md:justify-between gap-4'>
               <div className='flex items-start gap-6 text-sm'>
-                <img 
-                  className='w-16 sm:w-20 h-16 sm:h-20 object-cover rounded-md' 
-                  src={item.image[0]} 
+                <img
+                  className='w-16 sm:w-20 h-16 sm:h-20 object-cover rounded-md'
+                  src={item.image[0]}
                   alt={item.name}
                   onError={(e) => {
                     e.target.src = '/api/placeholder/80/80';
@@ -344,15 +350,15 @@ const Orders = () => {
               </div>
               <div className='md:w-1/2 flex justify-between'>
                 <div className='flex items-center gap-2'>
-                  <p className='min-w-2 h-2 bg-green-500 rounded-full'></p>
-                  <p className='text-sm md:text-base font-medium'>{item.statusDisplay}</p>
+                  <p className={`min-w-2 h-2 rounded-full ${item.status === 0 ? 'bg-yellow-500' : item.status === 8 ? 'bg-red-500' : 'bg-green-500'}`}></p>
+                  <p className='text-sm md:text-base'>{item.statusDisplay}</p>
                 </div>
-                <button 
-                  onClick={() => handleTrackOrder(item.orderNumber)} 
-                  className='border border-gray-300 px-4 py-2 rounded-sm font-medium cursor-pointer hover:bg-black hover:text-white transition-all duration-300'
-                >
-                  Track Order
-                </button>
+                <div className='flex gap-2'>
+                  <button onClick={() => handleTrackOrder(item.orderNumber)} className='border px-4 py-2 text-sm font-medium rounded-sm'>Track Order</button>
+                  {(item.status === 0 || item.status === 'Pending Payment') && (
+                    <button onClick={() => handlePayClick(item)} className='border px-4 py-2 text-sm font-medium rounded-sm bg-black text-white hover:bg-gray-800'>Pay Now</button>
+                  )}
+                </div>
               </div>
             </div>
           ))
@@ -366,7 +372,7 @@ const Orders = () => {
             {/* Modal Header */}
             <div className="flex justify-between items-center p-6 border-b">
               <h2 className="text-2xl font-bold">Order Details</h2>
-              <button 
+              <button
                 onClick={closeModal}
                 className="text-gray-500 hover:text-gray-700 text-2xl font-bold"
               >
@@ -389,19 +395,19 @@ const Orders = () => {
                       <h3 className="text-lg font-semibold mb-3">Order Information</h3>
                       <div className="space-y-2 text-sm">
                         <p><span className="font-medium">Order Number:</span> {selectedOrderDetails.orderNumber}</p>
-                        <p><span className="font-medium">Status:</span> 
+                        <p><span className="font-medium">Status:</span>
                           <span className={`ml-2 px-2 py-1 rounded text-xs ${getStatusColorClass(selectedOrderDetails.status)}`}>
                             {selectedOrderDetails.statusDisplay || selectedOrderDetails.status}
                           </span>
                         </p>
                         <p><span className="font-medium">Order Date:</span> {new Date(selectedOrderDetails.createdAt).toLocaleDateString()}</p>
                         <p><span className="font-medium">Total:</span> {currency}{selectedOrderDetails.total}</p>
-                        <p><span className="font-medium">Can Cancel:</span> 
+                        <p><span className="font-medium">Can Cancel:</span>
                           <span className={`ml-2 px-2 py-1 rounded text-xs ${selectedOrderDetails.canBeCancelled ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
                             {selectedOrderDetails.canBeCancelled ? 'Yes' : 'No'}
                           </span>
                         </p>
-                        <p><span className="font-medium">Can Return:</span> 
+                        <p><span className="font-medium">Can Return:</span>
                           <span className={`ml-2 px-2 py-1 rounded text-xs ${selectedOrderDetails.canBeReturned ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
                             {selectedOrderDetails.canBeReturned ? 'Yes' : 'No'}
                           </span>
@@ -437,7 +443,7 @@ const Orders = () => {
                     <div className="space-y-4">
                       {selectedOrderDetails.items?.map((item, index) => (
                         <div key={index} className="border rounded-lg p-4 flex items-start gap-4">
-                          <img 
+                          <img
                             src={item.product?.mainImageUrl || '/api/placeholder/80/80'}
                             alt={item.product?.name}
                             className="w-20 h-20 object-cover rounded-md"
@@ -479,7 +485,7 @@ const Orders = () => {
                             <p><span className="font-medium">Payment Method:</span> {payment.paymentMethod}</p>
                             <p><span className="font-medium">Amount:</span> {currency}{payment.amount}</p>
                             <p><span className="font-medium">Payment Date:</span> {new Date(payment.paymentDate).toLocaleDateString()}</p>
-                            <p><span className="font-medium">Status:</span> 
+                            <p><span className="font-medium">Status:</span>
                               <span className={`ml-2 px-2 py-1 rounded text-xs ${getStatusColorClass(payment.status)}`}>
                                 {payment.status}
                               </span>
@@ -534,35 +540,35 @@ const Orders = () => {
                         <div className="w-3 h-3 bg-green-500 rounded-full"></div>
                         <span className="text-sm">Order Placed - {new Date(selectedOrderDetails.createdAt).toLocaleDateString()}</span>
                       </div>
-                      
+
                       {selectedOrderDetails.status !== 'PaymentExpired' && selectedOrderDetails.status !== 'Failed' && (
                         <div className="flex items-center gap-3">
                           <div className={`w-3 h-3 rounded-full ${selectedOrderDetails.status === 'Confirmed' || selectedOrderDetails.isShipped || selectedOrderDetails.isDelivered ? 'bg-blue-500' : 'bg-gray-300'}`}></div>
                           <span className="text-sm">Payment:{selectedOrderDetails.status}</span>
                         </div>
                       )}
-                      
+
                       {(selectedOrderDetails.shippedAt || selectedOrderDetails.isShipped) && (
                         <div className="flex items-center gap-3">
                           <div className="w-3 h-3 bg-blue-500 rounded-full"></div>
                           <span className="text-sm">Shipped - {selectedOrderDetails.shippedAt ? new Date(selectedOrderDetails.shippedAt).toLocaleDateString() : 'Shipped'}</span>
                         </div>
                       )}
-                      
+
                       {(selectedOrderDetails.deliveredAt || selectedOrderDetails.isDelivered) && (
                         <div className="flex items-center gap-3">
                           <div className="w-3 h-3 bg-green-500 rounded-full"></div>
                           <span className="text-sm">Delivered - {selectedOrderDetails.deliveredAt ? new Date(selectedOrderDetails.deliveredAt).toLocaleDateString() : 'Delivered'}</span>
                         </div>
                       )}
-                      
+
                       {(selectedOrderDetails.cancelledAt || selectedOrderDetails.isCancelled) && (
                         <div className="flex items-center gap-3">
                           <div className="w-3 h-3 bg-red-500 rounded-full"></div>
                           <span className="text-sm">Cancelled - {selectedOrderDetails.cancelledAt ? new Date(selectedOrderDetails.cancelledAt).toLocaleDateString() : 'Cancelled'}</span>
                         </div>
                       )}
-                      
+
                       {selectedOrderDetails.status === 'PaymentExpired' && (
                         <div className="flex items-center gap-3">
                           <div className="w-3 h-3 bg-red-500 rounded-full"></div>
@@ -581,7 +587,7 @@ const Orders = () => {
 
             {/* Modal Footer */}
             <div className="flex justify-end p-6 border-t">
-              <button 
+              <button
                 onClick={closeModal}
                 className="px-6 py-2 bg-gray-500 text-white rounded hover:bg-gray-600 transition-colors"
               >

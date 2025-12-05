@@ -105,9 +105,38 @@ const ListCollection = ({
     }
   };
 
+  // Restore
+  const restoreCollection = async (id) => {
+    try {
+      await axios.patch(
+        `${backendUrl}/api/Collection/Restore/${id}`,
+        {},
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+
+      // Update state locally
+      setCollections((prev) =>
+        prev.map((col) =>
+          col.id === id ? { ...col, isDeleted: false, wasDeleted: false } : col
+        )
+      );
+
+      toast.success("Collection restored successfully");
+    } catch (error) {
+      console.error("Restore error:", error);
+      const msg =
+        error.response?.data?.responseBody?.message ||
+        error.response?.data?.message ||
+        "Failed to restore collection";
+      toast.error(msg);
+    }
+  };
+
   // Activate / Deactivate / Restore
   const activateCollection = async (col) => {
     if (!col.mainImage) return toast.error("Upload a main image first!");
+    if (col.isDeleted || col.wasDeleted) return toast.error("Cannot activate a deleted collection!");
+
     try {
       await axios.patch(
         `${backendUrl}/api/Collection/activate/${col.id}`,
@@ -128,10 +157,13 @@ const ListCollection = ({
       toast.success("Collection activated successfully");
     } catch (error) {
       console.error("Activation error:", error.response || error);
-      toast.error(
+      const msg =
+        error.response?.data?.responseBody?.message ||
+        error.response?.data?.message ||
+        error.response?.data?.error ||
         error.response?.data?.responseBody?.errors?.detail ||
-          "Failed to activate collection"
-      );
+        "Failed to activate collection";
+      toast.error(msg);
     }
   };
 
@@ -163,7 +195,7 @@ const ListCollection = ({
       console.error("❌ Error activating collection with products:", error);
       toast.error(
         error.response?.data?.message ||
-          "Failed to activate collection with products"
+        "Failed to activate collection with products"
       );
     }
   };
@@ -185,7 +217,12 @@ const ListCollection = ({
 
       toast.success("Collection deactivated successfully");
     } catch (error) {
-      toast.error("Failed to deactivate collection");
+      const msg =
+        error.response?.data?.responseBody?.message ||
+        error.response?.data?.message ||
+        error.response?.data?.error ||
+        "Failed to deactivate collection";
+      toast.error(msg);
     }
   };
 
@@ -549,19 +586,22 @@ const ListCollection = ({
                     {col.displayOrder}
                   </td>
                   <td className="py-3 px-4 border-b">
-                    {col.isDeleted || col.wasDeleted ? (
-                      <span className="px-2 py-1 bg-red-100 text-red-700 rounded-full text-xs font-medium">
-                        Deleted
-                      </span>
-                    ) : col.isActive ? (
-                      <span className="px-2 py-1 bg-green-100 text-green-700 rounded-full text-xs font-medium">
-                        Active
-                      </span>
-                    ) : (
-                      <span className="px-2 py-1 bg-yellow-100 text-yellow-700 rounded-full text-xs font-medium">
-                        Inactive
-                      </span>
-                    )}
+                    <div className="flex flex-col gap-1">
+                      {col.isActive ? (
+                        <span className="px-2 py-1 bg-green-100 text-green-700 rounded-full text-xs font-medium w-fit">
+                          Active
+                        </span>
+                      ) : (
+                        <span className="px-2 py-1 bg-yellow-100 text-yellow-700 rounded-full text-xs font-medium w-fit">
+                          Inactive
+                        </span>
+                      )}
+                      {(col.isDeleted || col.wasDeleted || col.deletedAt) && (
+                        <span className="px-2 py-1 bg-red-100 text-red-700 rounded-full text-xs font-medium w-fit">
+                          Deleted
+                        </span>
+                      )}
+                    </div>
                   </td>
                   <td className="py-3 px-4 border-b">
                     <div className="flex flex-wrap gap-2">
@@ -581,7 +621,7 @@ const ListCollection = ({
                         </button>
                       )}
 
-                      {!col.isDeleted && !col.wasDeleted ? (
+                      {!col.isDeleted && !col.wasDeleted && !col.deletedAt ? (
                         <button
                           onClick={() => setDeleteId(col.id)}
                           className="px-2 py-1 bg-red-500 text-white rounded-md hover:bg-red-600 text-xs font-medium transition-colors shadow-sm flex items-center justify-center min-w-[60px]"
@@ -590,10 +630,10 @@ const ListCollection = ({
                         </button>
                       ) : (
                         <button
-                          className="px-2 py-1 bg-gray-500 text-white rounded-md hover:bg-green-600 text-xs font-medium transition-colors shadow-sm flex items-center justify-center min-w-[60px]"
-                          disabled
+                          onClick={() => restoreCollection(col.id)}
+                          className="px-2 py-1 bg-green-500 text-white rounded-md hover:bg-green-600 text-xs font-medium transition-colors shadow-sm flex items-center justify-center min-w-[60px]"
                         >
-                          Delete
+                          Restore
                         </button>
                       )}
 
@@ -794,7 +834,7 @@ const ListCollection = ({
                   </button>
                 </div>
               </div>
-              
+
               {/* Active Categories Preview */}
               <div className="mb-4 p-3 bg-blue-50 rounded-md border border-blue-100">
                 <h4 className="text-sm font-medium text-blue-700 mb-2 flex items-center">
@@ -829,8 +869,8 @@ const ListCollection = ({
                 ) : categories.length > 0 ? (
                   <div className="flex flex-wrap gap-2">
                     {categories.map((cat) => (
-                      <span 
-                        key={cat} 
+                      <span
+                        key={cat}
                         className="px-2 py-1 bg-white text-blue-600 text-xs rounded-md border border-blue-200 cursor-pointer hover:bg-blue-100"
                         onClick={() => {
                           document.getElementById("categoryFilter").value = cat;
@@ -1294,8 +1334,8 @@ const ListCollection = ({
                     }
                   >
                     {selectedCollection &&
-                    (selectedCollection.isDeleted ||
-                      selectedCollection.wasDeleted)
+                      (selectedCollection.isDeleted ||
+                        selectedCollection.wasDeleted)
                       ? "Cannot Activate Deleted Collection"
                       : selectedProductIds.length === 0
                         ? "Select Products to Activate"

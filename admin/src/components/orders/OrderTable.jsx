@@ -2,11 +2,11 @@ import React from 'react';
 import { assets } from '../../assets/assets';
 import { currency } from '../../App';
 
-const OrderTable = ({ 
-  currentOrders, 
-  filteredOrders, 
-  handleViewOrder, 
-  statusHandler 
+const OrderTable = ({
+  currentOrders,
+  filteredOrders,
+  handleViewOrder,
+  statusHandler
 }) => {
   const STATUS_LABELS = {
     0: 'PendingPayment',
@@ -55,6 +55,9 @@ const OrderTable = ({
               Customer
             </th>
             <th className="py-3 px-4 border-b text-left font-semibold text-gray-700">
+              Date
+            </th>
+            <th className="py-3 px-4 border-b text-left font-semibold text-gray-700">
               Amount
             </th>
             <th className="py-3 px-4 border-b text-left font-semibold text-gray-700">
@@ -96,78 +99,83 @@ const OrderTable = ({
               const isNumericStatus = typeof status === "number";
 
               return (
-              <tr key={index} className="hover:bg-gray-50">
-                <td className="py-3 px-4">
-                  <div className="flex items-center">
-                    <img
-                      className="w-10 h-10"
-                      src={assets.parcel_icon}
-                      alt=""
-                    />
-                    <div className="ml-3">
-                      <div className="text-sm font-medium">
-                        {itemsCount} items
-                      </div>
-                      <div className="text-xs text-gray-500 truncate max-w-[200px]">
-                        {items.length > 0 ? items.map((item, i) => (
-                          <span key={i}>
-                            {item.name} x {item.quantity}
-                            {i < items.length - 1 ? ", " : ""}
-                          </span>
-                        )) : (
-                          <span>
-                            Order #{order.orderNumber || orderId}
-                          </span>
-                        )}
+                <tr key={index} className="hover:bg-gray-50">
+                  <td className="py-3 px-4">
+                    <div className="flex items-center">
+                      <img
+                        className="w-10 h-10"
+                        src={assets.parcel_icon}
+                        alt=""
+                      />
+                      <div className="ml-3">
+                        <div className="text-sm font-medium">
+                          {itemsCount} items
+                        </div>
+                        <div className="text-xs text-gray-500 truncate max-w-[200px]">
+                          {items.length > 0 ? items.map((item, i) => (
+                            <span key={i}>
+                              {item.name} x {item.quantity}
+                              {i < items.length - 1 ? ", " : ""}
+                            </span>
+                          )) : (
+                            <span>
+                              Order #{order.orderNumber || orderId}
+                            </span>
+                          )}
+                        </div>
                       </div>
                     </div>
-                  </div>
-                </td>
-                <td className="py-3 px-4">
-                  <div className="text-sm">
-                    {customerName}
-                  </div>
-                  <div className="text-xs text-gray-500">
-                    {phone}
-                  </div>
-                </td>
-                <td className="py-3 px-4">
-                  <div className="text-sm font-medium">
-                    {currency} {Number(amount || 0).toFixed(2)}
-                  </div>
-                </td>
-                <td className="py-3 px-4">
-                  <div className="flex items-center gap-2">
-                    <select
-                      className="p-1 text-sm border border-gray-300 rounded focus:ring-2 focus:ring-blue-300 focus:border-blue-300 transition-all"
-                      value={Number(status) || 0}
-                      onChange={(e) => statusHandler(orderId, e)}
+                  </td>
+                  <td className="py-3 px-4">
+                    <div className="text-sm">
+                      {customerName}
+                    </div>
+                    <div className="text-xs text-gray-500">
+                      {phone}
+                    </div>
+                  </td>
+                  <td className="py-3 px-4">
+                    <div className="text-sm text-gray-500">
+                      {new Date(date).toLocaleDateString()}
+                    </div>
+                  </td>
+                  <td className="py-3 px-4">
+                    <div className="text-sm font-medium">
+                      {currency} {Number(amount || 0).toFixed(2)}
+                    </div>
+                  </td>
+                  <td className="py-3 px-4">
+                    <div className="flex items-center gap-2">
+                      <select
+                        className="p-1 text-sm border border-gray-300 rounded focus:ring-2 focus:ring-blue-300 focus:border-blue-300 transition-all"
+                        value={Number(status) || 0}
+                        onChange={(e) => statusHandler(orderId, e)}
+                      >
+                        {Object.entries(STATUS_LABELS).map(([code, label]) => (
+                          <option key={code} value={code}>{label}</option>
+                        ))}
+                      </select>
+                      <span
+                        className={`text-xs px-2 py-0.5 rounded-full ${statusBadgeClass(getStatusLabel(status))}`}
+                      >
+                        {getStatusLabel(status)}
+                      </span>
+                    </div>
+                  </td>
+                  <td className="py-3 px-4">
+                    <button
+                      onClick={() => {
+                        const num = order.orderNumber || orderId;
+                        console.log("Order number:", num);
+                        handleViewOrder(orderId, order.orderNumber);
+                      }}
+                      className="text-blue-600 hover:text-blue-800 transition-all"
                     >
-                      {Object.entries(STATUS_LABELS).map(([code, label]) => (
-                        <option key={code} value={code}>{label}</option>
-                      ))}
-                    </select>
-                    <span
-                      className={`text-xs px-2 py-0.5 rounded-full ${statusBadgeClass(getStatusLabel(status))}`}
-                    >
-                      {getStatusLabel(status)}
-                    </span>
-                  </div>
-                </td>
-                <td className="py-3 px-4">
-                  <button
-                    onClick={() => {
-                      const num = order.orderNumber || orderId;
-                      console.log("Order number:", num);
-                      handleViewOrder(orderId, order.orderNumber);
-                    }}
-                    className="text-blue-600 hover:text-blue-800 transition-all"
-                  >
-                    View
-                  </button>
-                </td>
-              </tr>
-            );
+                      View
+                    </button>
+                  </td>
+                </tr>
+              );
             })
           )}
         </tbody>

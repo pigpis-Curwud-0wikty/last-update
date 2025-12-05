@@ -632,7 +632,7 @@ const API = {
       try {
         const response = await axios.patch(
           `${backendUrl}/api/Discount/${discountId}/activate`,
-          {},
+          null,
           { headers: { Authorization: `Bearer ${token}` } }
         );
         return response.data;
@@ -650,7 +650,7 @@ const API = {
       try {
         const response = await axios.patch(
           `${backendUrl}/api/Discount/${discountId}/deactivate`,
-          {},
+          null,
           { headers: { Authorization: `Bearer ${token}` } }
         );
         return response.data;
@@ -739,6 +739,21 @@ const API = {
 
     // This function has been moved to the products section for better organization
     // and updated to match the API requirements
+  },
+
+  adminOperations: {
+    getAll: async (params, token) => {
+      try {
+        const response = await axios.get(`${backendUrl}/api/AdminOperation`, {
+          headers: { Authorization: `Bearer ${token}` },
+          params: params,
+        });
+        return response.data;
+      } catch (error) {
+        logApiError(error, "fetching admin operations");
+        throw error;
+      }
+    },
   },
 
   // Product Variants APIs

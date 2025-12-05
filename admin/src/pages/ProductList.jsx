@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { toast } from "react-toastify";
 import { useNavigate } from "react-router-dom";
 import API from "../services/api";
+import { currency } from "../App";
 import ProductSearchForm from "../components/forms/ProductSearchForm";
 
 const ProductList = ({ token }) => {
@@ -212,9 +213,9 @@ const ProductList = ({ token }) => {
         items = items.filter((product) => {
           const dp = Number(
             (product.discount && (product.discount.discountPercent ?? product.discount.percentage)) ??
-              product.discountPercentage ??
-              product.discountPrecentage ??
-              0
+            product.discountPercentage ??
+            product.discountPrecentage ??
+            0
           );
           return !Number.isNaN(dp) && dp > 0;
         });
@@ -672,151 +673,149 @@ const ProductList = ({ token }) => {
                 .map((product) => {
                   const dp = Number(
                     (product.discount && (product.discount.discountPercent ?? product.discount.percentage)) ??
-                      product.discountPercentage ??
-                      product.discountPrecentage ??
-                      0
+                    product.discountPercentage ??
+                    product.discountPrecentage ??
+                    0
                   );
                   const hasDiscount = !Number.isNaN(dp) && dp > 0;
                   const basePrice = Number(product.price || 0);
                   const serverFinal = product.finalPrice != null ? Number(product.finalPrice) : null;
                   const finalPrice = hasDiscount
                     ? (serverFinal != null && !Number.isNaN(serverFinal)
-                        ? serverFinal
-                        : basePrice * (1 - dp / 100))
+                      ? serverFinal
+                      : basePrice * (1 - dp / 100))
                     : basePrice;
 
                   return (
-                  <tr key={product.id}>
-                    <td className="px-6 py-4">{product.id}</td>
+                    <tr key={product.id}>
+                      <td className="px-6 py-4">{product.id}</td>
 
-                    <td className="px-6 py-4">
-                      {product.images && product.images.length > 0 ? (
-                        <img
-                          src={
-                            product.images.find((img) => img.isMain)?.url ||
-                            product.images[0].url
-                          }
-                          alt={product.name}
-                          className="w-16 h-16 object-cover rounded"
-                        />
-                      ) : (
-                        <span className="text-gray-400">No Image</span>
-                      )}
-                    </td>
-
-                    <td className="px-6 py-4">
-                      <div className="flex items-center gap-2">
-                        <span>{product.name}</span>
-                        {hasDiscount && (
-                          <span className="px-2 py-0.5 text-xs rounded-full bg-purple-100 text-purple-700">
-                            {dp}% OFF
-                          </span>
+                      <td className="px-6 py-4">
+                        {product.images && product.images.length > 0 ? (
+                          <img
+                            src={
+                              product.images.find((img) => img.isMain)?.url ||
+                              product.images[0].url
+                            }
+                            alt={product.name}
+                            className="w-16 h-16 object-cover rounded"
+                          />
+                        ) : (
+                          <span className="text-gray-400">No Image</span>
                         )}
-                      </div>
-                    </td>
+                      </td>
 
-                    <td className="px-6 py-4">
-                      {product.description?.length > 50
-                        ? `${product.description.substring(0, 50)}...`
-                        : product.description}
-                    </td>
-
-                    <td className="px-6 py-4">
-                      {hasDiscount ? (
-                        <div className="font-semibold">
-                          <span className="line-through text-gray-500 mr-2">${basePrice.toFixed(2)}</span>
-                          <span className="text-green-700">${finalPrice.toFixed(2)}</span>
+                      <td className="px-6 py-4">
+                        <div className="flex items-center gap-2">
+                          <span>{product.name}</span>
+                          {hasDiscount && (
+                            <span className="px-2 py-0.5 text-xs rounded-full bg-purple-100 text-purple-700">
+                              {dp}% OFF
+                            </span>
+                          )}
                         </div>
-                      ) : (
-                        <span className="font-semibold">${basePrice.toFixed(2)}</span>
-                      )}
-                    </td>
+                      </td>
 
-                    <td className="px-6 py-4">
-                      {genderMap[product.gender] || "-"}
-                    </td>
+                      <td className="px-6 py-4">
+                        {product.description?.length > 50
+                          ? `${product.description.substring(0, 50)}...`
+                          : product.description}
+                      </td>
 
-                    <td className="px-6 py-4">
-                      {fitTypeMap[product.fitType] || "-"}
-                    </td>
+                      <td className="px-6 py-4">
+                        {hasDiscount ? (
+                          <div className="font-semibold">
+                            <span className="line-through text-gray-500 mr-2">{currency} {basePrice.toFixed(2)}</span>
+                            <span className="text-green-700">{currency} {finalPrice.toFixed(2)}</span>
+                          </div>
+                        ) : (
+                          <span className="font-semibold">{currency} {basePrice.toFixed(2)}</span>
+                        )}
+                      </td>
 
-                    <td className="px-6 py-4">
-                      <span
-                        className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
-                          product.isActive
+                      <td className="px-6 py-4">
+                        {genderMap[product.gender] || "-"}
+                      </td>
+
+                      <td className="px-6 py-4">
+                        {fitTypeMap[product.fitType] || "-"}
+                      </td>
+
+                      <td className="px-6 py-4">
+                        <span
+                          className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${product.isActive
                             ? "bg-green-100 text-green-800"
                             : "bg-red-100 text-red-800"
-                        }`}
-                      >
-                        {product.isActive ? "Active" : "Inactive"}
-                      </span>
-                    </td>
+                            }`}
+                        >
+                          {product.isActive ? "Active" : "Inactive"}
+                        </span>
+                      </td>
 
-                    <td className="px-6 py-4">
-                      <div className="flex gap-2">
-                        {product.deletedAt ? (
-                          // زر Restore بدل Delete
-                          <button
-                            onClick={() => handleRestoreProduct(product.id)}
-                            className="px-3 py-1 bg-green-100 text-green-800 rounded text-xs"
-                          >
-                            Restore
-                          </button>
-                        ) : (
-                          <>
+                      <td className="px-6 py-4">
+                        <div className="flex gap-2">
+                          {product.deletedAt ? (
+                            // زر Restore بدل Delete
                             <button
-                              onClick={() => toggleProductStatus(product)}
-                              className={`px-3 py-1 rounded text-xs ${
-                                product.isActive
+                              onClick={() => handleRestoreProduct(product.id)}
+                              className="px-3 py-1 bg-green-100 text-green-800 rounded text-xs"
+                            >
+                              Restore
+                            </button>
+                          ) : (
+                            <>
+                              <button
+                                onClick={() => toggleProductStatus(product)}
+                                className={`px-3 py-1 rounded text-xs ${product.isActive
                                   ? "bg-yellow-100 text-yellow-800"
                                   : "bg-green-100 text-green-800"
-                              }`}
-                            >
-                              {product.isActive ? "Deactivate" : "Activate"}
-                            </button>
-                            <button
-                              onClick={() => handleDeleteProduct(product.id)}
-                              className="px-3 py-1 bg-red-100 text-red-800 rounded text-xs"
-                            >
-                              Delete
-                            </button>
-                            <button
-                              onClick={() =>
-                                navigate(`/add?edit=${product.id}`)
-                              }
-                              className="px-3 py-1 bg-orange-100 text-orange-800 rounded text-xs"
-                            >
-                              Update
-                            </button>
-                            <button
-                              onClick={() =>
-                                navigate(`/products/${product.id}`)
-                              }
-                              className="px-3 py-1 bg-gray-100 text-gray-800 rounded text-xs"
-                            >
-                              View
-                            </button>
-                            <button
-                              onClick={() =>
-                                navigate(`/products/${product.id}/variants`)
-                              }
-                              className="px-3 py-1 bg-blue-100 text-blue-800 rounded text-xs"
-                            >
-                              Variants
-                            </button>
-                            <button
-                              onClick={() =>
-                                navigate(`/products/${product.id}/discount`)
-                              }
-                              className="px-3 py-1 bg-purple-100 text-purple-800 rounded text-xs"
-                            >
-                              Discount
-                            </button>
-                          </>
-                        )}
-                      </div>
-                    </td>
-                  </tr>
+                                  }`}
+                              >
+                                {product.isActive ? "Deactivate" : "Activate"}
+                              </button>
+                              <button
+                                onClick={() => handleDeleteProduct(product.id)}
+                                className="px-3 py-1 bg-red-100 text-red-800 rounded text-xs"
+                              >
+                                Delete
+                              </button>
+                              <button
+                                onClick={() =>
+                                  navigate(`/add?edit=${product.id}`)
+                                }
+                                className="px-3 py-1 bg-orange-100 text-orange-800 rounded text-xs"
+                              >
+                                Update
+                              </button>
+                              <button
+                                onClick={() =>
+                                  navigate(`/products/${product.id}`)
+                                }
+                                className="px-3 py-1 bg-gray-100 text-gray-800 rounded text-xs"
+                              >
+                                View
+                              </button>
+                              <button
+                                onClick={() =>
+                                  navigate(`/products/${product.id}/variants`)
+                                }
+                                className="px-3 py-1 bg-blue-100 text-blue-800 rounded text-xs"
+                              >
+                                Variants
+                              </button>
+                              <button
+                                onClick={() =>
+                                  navigate(`/products/${product.id}/discount`)
+                                }
+                                className="px-3 py-1 bg-purple-100 text-purple-800 rounded text-xs"
+                              >
+                                Discount
+                              </button>
+                            </>
+                          )}
+                        </div>
+                      </td>
+                    </tr>
                   );
                 })
             )}
@@ -825,90 +824,92 @@ const ProductList = ({ token }) => {
       </div>
 
       {/* Pagination */}
-      {!loading && totalCount > 0 && (
-        <div className="flex flex-col md:flex-row justify-between items-center mt-4 bg-white p-4 rounded shadow">
-          {/* Left side - showing results info and items per page */}
-          <div className="flex flex-col md:flex-row items-center gap-4 mb-4 md:mb-0">
-            <div className="text-gray-600">
-              Showing {(searchParams.page - 1) * searchParams.pageSize + 1} to{" "}
-              {Math.min(searchParams.page * searchParams.pageSize, totalCount)}{" "}
-              of {totalCount} results
+      {
+        !loading && totalCount > 0 && (
+          <div className="flex flex-col md:flex-row justify-between items-center mt-4 bg-white p-4 rounded shadow">
+            {/* Left side - showing results info and items per page */}
+            <div className="flex flex-col md:flex-row items-center gap-4 mb-4 md:mb-0">
+              <div className="text-gray-600">
+                Showing {(searchParams.page - 1) * searchParams.pageSize + 1} to{" "}
+                {Math.min(searchParams.page * searchParams.pageSize, totalCount)}{" "}
+                of {totalCount} results
+              </div>
+
+              <div className="flex items-center">
+                <span className="mr-2 text-gray-600">Items per page:</span>
+                <select
+                  value={searchParams.pageSize}
+                  onChange={(e) => handlePageSizeChange(Number(e.target.value))}
+                  className="border rounded px-2 py-1 bg-white text-gray-700"
+                >
+                  <option value="10">10</option>
+                  <option value="20">20</option>
+                  <option value="50">50</option>
+                  <option value="100">100</option>
+                </select>
+              </div>
             </div>
 
-            <div className="flex items-center">
-              <span className="mr-2 text-gray-600">Items per page:</span>
-              <select
-                value={searchParams.pageSize}
-                onChange={(e) => handlePageSizeChange(Number(e.target.value))}
-                className="border rounded px-2 py-1 bg-white text-gray-700"
-              >
-                <option value="10">10</option>
-                <option value="20">20</option>
-                <option value="50">50</option>
-                <option value="100">100</option>
-              </select>
+            {/* Right side - page controls */}
+            <div className="flex gap-4 items-center">
+              <div className="text-gray-600 font-medium">
+                Page {searchParams.page} of{" "}
+                {Math.ceil(totalCount / searchParams.pageSize)}
+              </div>
+
+              <div className="flex gap-2">
+                <button
+                  onClick={() => handlePageChange(searchParams.page - 1)}
+                  disabled={searchParams.page === 1}
+                  className="px-4 py-2 bg-blue-500 text-white rounded disabled:bg-gray-300 disabled:text-gray-500 hover:bg-blue-600 transition-colors duration-200 flex items-center"
+                >
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    className="h-4 w-4 mr-1"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M15 19l-7-7 7-7"
+                    />
+                  </svg>
+                  Previous
+                </button>
+
+                <button
+                  onClick={() => handlePageChange(searchParams.page + 1)}
+                  disabled={
+                    searchParams.page >=
+                    Math.ceil(totalCount / searchParams.pageSize)
+                  }
+                  className="px-4 py-2 bg-blue-500 text-white rounded disabled:bg-gray-300 disabled:text-gray-500 hover:bg-blue-600 transition-colors duration-200 flex items-center"
+                >
+                  Next
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    className="h-4 w-4 ml-1"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M9 5l7 7-7 7"
+                    />
+                  </svg>
+                </button>
+              </div>
             </div>
           </div>
-
-          {/* Right side - page controls */}
-          <div className="flex gap-4 items-center">
-            <div className="text-gray-600 font-medium">
-              Page {searchParams.page} of{" "}
-              {Math.ceil(totalCount / searchParams.pageSize)}
-            </div>
-
-            <div className="flex gap-2">
-              <button
-                onClick={() => handlePageChange(searchParams.page - 1)}
-                disabled={searchParams.page === 1}
-                className="px-4 py-2 bg-blue-500 text-white rounded disabled:bg-gray-300 disabled:text-gray-500 hover:bg-blue-600 transition-colors duration-200 flex items-center"
-              >
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  className="h-4 w-4 mr-1"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M15 19l-7-7 7-7"
-                  />
-                </svg>
-                Previous
-              </button>
-
-              <button
-                onClick={() => handlePageChange(searchParams.page + 1)}
-                disabled={
-                  searchParams.page >=
-                  Math.ceil(totalCount / searchParams.pageSize)
-                }
-                className="px-4 py-2 bg-blue-500 text-white rounded disabled:bg-gray-300 disabled:text-gray-500 hover:bg-blue-600 transition-colors duration-200 flex items-center"
-              >
-                Next
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  className="h-4 w-4 ml-1"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M9 5l7 7-7 7"
-                  />
-                </svg>
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-    </div>
+        )
+      }
+    </div >
   );
 };
 

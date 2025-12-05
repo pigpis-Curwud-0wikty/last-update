@@ -63,19 +63,19 @@ const Orders = ({ token }) => {
   // Helper function to normalize order data from API response
   const normalizeOrderData = (d) => {
     const paymentStatusMap = {
- 0: 'PendingPayment',
-    1: 'Confirmed',
-    2: 'Processing',
-    3: 'Shipped',
-    4: 'Delivered',
-    5: 'CancelledByUser',
-    6: 'Refunded',
-    7: 'Returned',
-    8: 'PaymentExpired',
-    9: 'CancelledByAdmin',
-    10: 'Complete',
+      0: 'PendingPayment',
+      1: 'Confirmed',
+      2: 'Processing',
+      3: 'Shipped',
+      4: 'Delivered',
+      5: 'CancelledByUser',
+      6: 'Refunded',
+      7: 'Returned',
+      8: 'PaymentExpired',
+      9: 'CancelledByAdmin',
+      10: 'Complete',
     };
-    
+
     return {
       _id: d.id,
       id: d.id,
@@ -97,7 +97,7 @@ const Orders = ({ token }) => {
         unitPrice: item.unitPrice || 0,
         totalPrice: item.totalPrice || 0,
         image: item.product?.mainImageUrl || '',
-        variant: item.product?.productVariantForCartDto ? 
+        variant: item.product?.productVariantForCartDto ?
           `${item.product.productVariantForCartDto.color || ''} ${item.product.productVariantForCartDto.size || ''}`.trim() : '',
         price: item.unitPrice ?? item.product?.finalPrice ?? item.product?.price ?? 0,
         size: item.product?.productVariantForCartDto?.size || 'N/A',
@@ -108,13 +108,13 @@ const Orders = ({ token }) => {
       payment: d.payment?.map(payment => ({
         amount: payment.amount || 0,
         paymentDate: payment.paymentDate,
-        status: paymentStatusMap[payment.status] || 'Unknown',
+        status: paymentStatusMap[payment.status] || payment.status || 'Unknown',
         statusCode: payment.status,
         paymentMethodId: payment.paymentMethodId,
         paymentMethod: payment.paymentMethod || 'N/A'
       })) || [],
       paymentMethod: d.payment?.[0]?.paymentMethod || d.payment?.[0]?.paymentMethod?.name || d.payment?.[0]?.paymentMethodName || 'N/A',
-      paymentStatus: d.payment?.[0]?.status ? paymentStatusMap[d.payment[0].status] : 'N/A',
+      paymentStatus: d.payment?.[0]?.status ? (paymentStatusMap[d.payment[0].status] || d.payment[0].status) : 'N/A',
       isCancelled: d.isCancelled || false,
       isDelivered: d.isDelivered || false,
       isShipped: d.isShipped || false,
@@ -144,14 +144,14 @@ const Orders = ({ token }) => {
   const fetchOrderByNumber = async (orderNumber) => {
     const response = await axios.get(
       `${backendUrl}/api/Order/number/${encodeURIComponent(orderNumber)}`,
-      { 
-        headers: { 
+      {
+        headers: {
           Authorization: `Bearer ${token}`,
           'Content-Type': 'application/json'
-        } 
+        }
       }
     );
-    
+
     const d = response?.data?.responseBody?.data;
     if (d) {
       return normalizeOrderData(d);
@@ -321,14 +321,14 @@ const Orders = ({ token }) => {
   const handleViewOrder = async (orderId, orderNumber) => {
     console.log('Viewing order:', { orderId, orderNumber });
     setLoading(true);
-    
+
     try {
       // Primary method: Fetch by order number using the dedicated endpoint
       if (orderNumber) {
         try {
           console.log('Fetching order by number:', orderNumber);
           const normalizedOrder = await fetchOrderByNumber(orderNumber);
-          
+
           if (normalizedOrder) {
             console.log('Order details from API:', normalizedOrder);
             console.log('Payment data:', normalizedOrder.payment);
@@ -348,12 +348,12 @@ const Orders = ({ token }) => {
       }
 
       // Fallback: Try to find in current orders state
-      const foundInState = orders.find(o => 
-        String(o.id) === String(orderId) || 
+      const foundInState = orders.find(o =>
+        String(o.id) === String(orderId) ||
         String(o._id) === String(orderId) ||
         o.orderNumber === orderNumber
       );
-      
+
       if (foundInState) {
         console.log('Found order in state:', foundInState);
         setSelectedOrder(foundInState);
@@ -365,7 +365,7 @@ const Orders = ({ token }) => {
       // Final fallback: If no order number available, show error
       toast.error('Could not load order details. Order number is required.');
       console.error('Order not found - order number required:', { orderId, orderNumber });
-      
+
     } catch (error) {
       console.error('Error in handleViewOrder:', error);
       toast.error('Failed to load order details. Please try again.');
@@ -453,21 +453,21 @@ const Orders = ({ token }) => {
                     if (!detail) return null;
                     const items = Array.isArray(detail.items)
                       ? detail.items.map((it) => ({
-                          name: it.product?.name || it.name || "Item",
-                          quantity: it.quantity || 0,
-                          size:
-                            it.product?.productVariantForCartDto?.size || it.size || "N/A",
-                          price:
-                            it.unitPrice ?? it.product?.finalPrice ?? it.product?.price ?? it.price ?? 0,
-                        }))
+                        name: it.product?.name || it.name || "Item",
+                        quantity: it.quantity || 0,
+                        size:
+                          it.product?.productVariantForCartDto?.size || it.size || "N/A",
+                        price:
+                          it.unitPrice ?? it.product?.finalPrice ?? it.product?.price ?? it.price ?? 0,
+                      }))
                       : Array.isArray(detail.orderItems)
-                      ? detail.orderItems.map((it) => ({
+                        ? detail.orderItems.map((it) => ({
                           name: it.productName || it.name || "Item",
                           quantity: it.quantity || 0,
                           size: it.size || "N/A",
                           price: it.price || 0,
                         }))
-                      : [];
+                        : [];
                     const pm0 = Array.isArray(detail.payment) ? detail.payment[0] : null;
                     const paymentMethod =
                       pm0?.paymentMethod?.name ||
@@ -704,7 +704,7 @@ const Orders = ({ token }) => {
 
   // Get filtered orders
   const filteredOrders = getFilteredOrders();
-  
+
   // Client-side pagination for filtered results
   const itemsPerPage = 10; // Show 10 orders per page
   const totalFilteredPages = Math.ceil(filteredOrders.length / itemsPerPage);

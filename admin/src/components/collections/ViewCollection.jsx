@@ -45,7 +45,7 @@ const ViewCollection = ({ token, collectionId, isActive, includeDeleted }) => {
         else setError(err.response.data?.message || "Error fetching collection.");
       } else {
         setError(err.message || "Network error.");
-      } 
+      }
     } finally {
       setLoading(false);
     }
@@ -77,7 +77,7 @@ const ViewCollection = ({ token, collectionId, isActive, includeDeleted }) => {
 
   useEffect(() => {
     if (collectionId) fetchCollection();
-    
+
     // Clean up interval on unmount
     return () => {
       if (refreshInterval) {
@@ -103,7 +103,7 @@ const ViewCollection = ({ token, collectionId, isActive, includeDeleted }) => {
           Collection Details: {collection.name}
         </h2>
         <div className="flex items-center mt-3 md:mt-0 space-x-3">
-          <button 
+          <button
             onClick={handleRefresh}
             className="flex items-center px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 text-sm font-medium transition-colors shadow-sm"
             disabled={loading}
@@ -148,11 +148,18 @@ const ViewCollection = ({ token, collectionId, isActive, includeDeleted }) => {
                 <span className="text-gray-600 font-medium w-32">Display Order:</span>
                 <span className="text-gray-800">{collection.displayOrder}</span>
               </div>
-              <div className="flex items-center">
-                <span className="text-gray-600 font-medium w-32">Status:</span>
-                <span className={`px-3 py-1 rounded-full text-xs font-medium ${collection.isActive ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
-                  {collection.isActive ? 'Active' : 'Inactive'}
-                </span>
+              <div className="flex items-start">
+                <span className="text-gray-600 font-medium w-32 mt-1">Status:</span>
+                <div className="flex flex-col gap-1">
+                  <span className={`px-3 py-1 rounded-full text-xs font-medium w-fit ${collection.isActive ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
+                    {collection.isActive ? 'Active' : 'Inactive'}
+                  </span>
+                  {(collection.isDeleted || collection.deletedAt) && (
+                    <span className="px-3 py-1 rounded-full text-xs font-medium w-fit bg-gray-100 text-gray-800">
+                      Deleted
+                    </span>
+                  )}
+                </div>
               </div>
             </div>
           </div>
@@ -166,6 +173,12 @@ const ViewCollection = ({ token, collectionId, isActive, includeDeleted }) => {
                 <span className="text-gray-600 font-medium w-32">Modified:</span>
                 <span className="text-gray-800">{new Date(collection.modifiedAt).toLocaleString()}</span>
               </div>
+              {collection.deletedAt && (
+                <div className="flex items-center">
+                  <span className="text-gray-600 font-medium w-32 text-red-600">Deleted At:</span>
+                  <span className="text-red-600 font-medium">{new Date(collection.deletedAt).toLocaleString()}</span>
+                </div>
+              )}
             </div>
           </div>
         </div>
@@ -232,9 +245,8 @@ const ViewCollection = ({ token, collectionId, isActive, includeDeleted }) => {
                 {images.map((img, idx) => (
                   <div
                     key={img.id || idx}
-                    className={`relative group rounded-lg overflow-hidden border-2 transition-all ${
-                      safeSelected === idx ? 'border-blue-500 ring-2 ring-blue-200' : 'border-gray-200 hover:border-gray-300'
-                    }`}
+                    className={`relative group rounded-lg overflow-hidden border-2 transition-all ${safeSelected === idx ? 'border-blue-500 ring-2 ring-blue-200' : 'border-gray-200 hover:border-gray-300'
+                      }`}
                   >
                     <button
                       onClick={() => setSelectedImageIndex(idx)}
@@ -291,17 +303,17 @@ const ViewCollection = ({ token, collectionId, isActive, includeDeleted }) => {
                   {products.map((p, i) => {
                     const dp = Number(
                       (p.discount && (p.discount.discountPercent ?? p.discount.percentage)) ??
-                        p.discountPercentage ??
-                        p.discountPrecentage ??
-                        0
+                      p.discountPercentage ??
+                      p.discountPrecentage ??
+                      0
                     );
                     const hasDiscount = !Number.isNaN(dp) && dp > 0;
                     const basePrice = Number(p.price || 0);
                     const serverFinal = p.finalPrice != null ? Number(p.finalPrice) : null;
                     const finalPrice = hasDiscount
                       ? (serverFinal != null && !Number.isNaN(serverFinal)
-                          ? serverFinal
-                          : basePrice * (1 - dp / 100))
+                        ? serverFinal
+                        : basePrice * (1 - dp / 100))
                       : basePrice;
                     const imgUrl =
                       p.images?.find((img) => img.isMain)?.url || p.images?.[0]?.url || p.mainImage?.url;

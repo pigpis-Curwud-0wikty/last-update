@@ -13,13 +13,15 @@ const ViewOrderModal = ({ selectedOrder, setShowViewModal }) => {
   const items = Array.isArray(selectedOrder.items)
     ? selectedOrder.items
     : Array.isArray(selectedOrder.orderItems)
-    ? selectedOrder.orderItems.map((it) => ({
+      ? selectedOrder.orderItems.map((it) => ({
         name: it.productName || it.name || "Item",
         quantity: it.quantity || 0,
         size: it.size || "N/A",
         price: it.price || 0,
+        image: it.product?.mainImageUrl || it.image || "",
+        discountPercentage: it.product?.discountPrecentage || 0
       }))
-    : [];
+      : [];
 
   // Calculate order total (fallback to amount/total when items not present)
   const computedItemsTotal = items.reduce(
@@ -61,7 +63,7 @@ const ViewOrderModal = ({ selectedOrder, setShowViewModal }) => {
     "N/A";
   const paymentMethod = paymentInfo.paymentMethod || selectedOrder.paymentMethod || "N/A";
   const paymentDate = paymentInfo.paymentDate || "";
-  
+
   // Debug logging
   console.log('ViewOrderModal - Payment Info:', paymentInfo);
   console.log('ViewOrderModal - Payment Status:', paymentStatus);
@@ -119,6 +121,17 @@ const ViewOrderModal = ({ selectedOrder, setShowViewModal }) => {
     return 'bg-gray-100 text-gray-700';
   };
 
+  // Timeline steps
+  const timelineSteps = [
+    { label: 'Placed', date: orderDate, active: true },
+    { label: 'Shipped', date: shippedAt, active: isShipped || isDelivered },
+    { label: 'Delivered', date: deliveredAt, active: isDelivered },
+  ];
+
+  if (isCancelled) {
+    timelineSteps.push({ label: 'Cancelled', date: cancelledAt, active: true, isError: true });
+  }
+
   return (
     <div className="fixed inset-0 bg-black/30 flex items-center justify-center z-50 p-4">
       <div className="bg-white rounded-lg shadow-xl w-full max-w-3xl max-h-[90vh] overflow-y-auto">
@@ -146,6 +159,22 @@ const ViewOrderModal = ({ selectedOrder, setShowViewModal }) => {
                 />
               </svg>
             </button>
+          </div>
+
+          {/* Order Timeline */}
+          <div className="mb-8 px-4">
+            <div className="flex items-center justify-between relative">
+              <div className="absolute left-0 top-1/2 transform -translate-y-1/2 w-full h-1 bg-gray-200 -z-10"></div>
+              {timelineSteps.map((step, index) => (
+                <div key={index} className={`flex flex-col items-center bg-white px-2 ${step.active ? 'text-blue-600' : 'text-gray-400'}`}>
+                  <div className={`w-8 h-8 rounded-full flex items-center justify-center border-2 ${step.active ? (step.isError ? 'border-red-500 bg-red-50 text-red-500' : 'border-blue-600 bg-blue-50 text-blue-600') : 'border-gray-300 bg-white'}`}>
+                    {index + 1}
+                  </div>
+                  <span className="text-xs font-medium mt-1">{step.label}</span>
+                  {step.date && <span className="text-[10px] text-gray-500">{new Date(step.date).toLocaleDateString()}</span>}
+                </div>
+              ))}
+            </div>
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
@@ -184,13 +213,13 @@ const ViewOrderModal = ({ selectedOrder, setShowViewModal }) => {
                   <div className="mb-2">
                     <span className="text-gray-600 text-sm">Delivered At:</span>
                     <p className="font-medium">{new Date(deliveredAt).toLocaleString()}</p>
-                </div>
+                  </div>
                 )}
                 {cancelledAt && (
                   <div className="mb-2">
                     <span className="text-gray-600 text-sm">Cancelled At:</span>
                     <p className="font-medium">{new Date(cancelledAt).toLocaleString()}</p>
-                </div>
+                  </div>
                 )}
               </div>
             </div>
@@ -335,8 +364,8 @@ const ViewOrderModal = ({ selectedOrder, setShowViewModal }) => {
                                 />
                               )}
                               <div>
-                            <div className="text-sm font-medium text-gray-900">
-                              {item.name}
+                                <div className="text-sm font-medium text-gray-900">
+                                  {item.name}
                                 </div>
                                 {item.discountPercentage > 0 && (
                                   <div className="text-xs text-green-600">
@@ -348,9 +377,9 @@ const ViewOrderModal = ({ selectedOrder, setShowViewModal }) => {
                           </td>
                           <td className="py-2 px-4 whitespace-nowrap">
                             <div className="text-sm text-gray-500">
-                              {item.color && item.size ? `${item.color}, Size ${item.size}` : 
-                               item.size ? `Size ${item.size}` : 
-                               item.color ? item.color : 'N/A'}
+                              {item.color && item.size ? `${item.color}, Size ${item.size}` :
+                                item.size ? `Size ${item.size}` :
+                                  item.color ? item.color : 'N/A'}
                             </div>
                           </td>
                           <td className="py-2 px-4 whitespace-nowrap">

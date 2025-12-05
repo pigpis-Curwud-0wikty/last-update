@@ -1,6 +1,7 @@
 import React, { useEffect, useState, useCallback } from "react";
 import { toast } from "react-toastify";
 import API from "../../services/api";
+import { currency } from "../../App";
 import { useNavigate } from "react-router-dom";
 
 const ViewProduct = ({ token, productId }) => {
@@ -141,9 +142,9 @@ const ViewProduct = ({ token, productId }) => {
       console.error("Error toggling product status:", error?.response || error);
       toast.error(
         error?.response?.data?.responseBody?.message ||
-          error?.response?.data?.message ||
-          error?.message ||
-          "Failed to toggle product status"
+        error?.response?.data?.message ||
+        error?.message ||
+        "Failed to toggle product status"
       );
     } finally {
       setActionLoading(false);
@@ -160,9 +161,9 @@ const ViewProduct = ({ token, productId }) => {
   const discountPercent = Number(
     // Support multiple shapes: direct percentage or nested discount object
     (product.discount && (product.discount.discountPercent ?? product.discount.percentage)) ??
-      product.discountPercentage ??
-      product.discountPrecentage ??
-      0
+    product.discountPercentage ??
+    product.discountPrecentage ??
+    0
   );
   const hasDiscount = !Number.isNaN(discountPercent) && discountPercent > 0;
   // Prefer server-provided finalPrice when available
@@ -170,8 +171,8 @@ const ViewProduct = ({ token, productId }) => {
   const basePrice = Number(product.price);
   const discountedPrice = hasDiscount
     ? (serverFinalPrice != null && !Number.isNaN(serverFinalPrice)
-        ? serverFinalPrice
-        : basePrice * (1 - discountPercent / 100))
+      ? serverFinalPrice
+      : basePrice * (1 - discountPercent / 100))
     : basePrice;
 
   return (
@@ -203,11 +204,10 @@ const ViewProduct = ({ token, productId }) => {
                 type="button"
                 onClick={toggleProductStatus}
                 disabled={actionLoading}
-                className={`px-3 py-1 rounded text-xs ${
-                  product.isActive
-                    ? "bg-yellow-100 text-yellow-800"
-                    : "bg-green-100 text-green-800"
-                }`}
+                className={`px-3 py-1 rounded text-xs ${product.isActive
+                  ? "bg-yellow-100 text-yellow-800"
+                  : "bg-green-100 text-green-800"
+                  }`}
               >
                 {product.isActive ? "Deactivate" : "Activate"}
               </button>
@@ -227,7 +227,7 @@ const ViewProduct = ({ token, productId }) => {
       {images.length > 0 && (
         <div className="mb-8">
           <h3 className="text-xl font-semibold mb-4">Product Images</h3>
-          
+
           {/* Main Image Display */}
           <div className="mb-4">
             <div className="relative bg-gray-50 rounded-lg p-4 group">
@@ -242,7 +242,7 @@ const ViewProduct = ({ token, productId }) => {
                   No Image Available
                 </div>
               )}
-              
+
               {/* Delete button for main image */}
               {images[selectedImageIndex]?.isMain && (
                 <button
@@ -254,7 +254,7 @@ const ViewProduct = ({ token, productId }) => {
                   Delete Main
                 </button>
               )}
-              
+
               {/* Delete button for regular images */}
               {images[selectedImageIndex] && !images[selectedImageIndex].isMain && images[selectedImageIndex].id && (
                 <button
@@ -266,7 +266,7 @@ const ViewProduct = ({ token, productId }) => {
                   Delete
                 </button>
               )}
-              
+
               {/* Image Navigation Arrows */}
               {images.length > 1 && (
                 <>
@@ -289,7 +289,7 @@ const ViewProduct = ({ token, productId }) => {
                 </>
               )}
             </div>
-            
+
             {/* Image Counter */}
             {images.length > 1 && (
               <div className="text-center mt-2 text-sm text-gray-600">
@@ -304,11 +304,10 @@ const ViewProduct = ({ token, productId }) => {
               {images.map((img, idx) => (
                 <div
                   key={img.id || idx}
-                  className={`relative group rounded-lg overflow-hidden border-2 transition-all ${
-                    selectedImageIndex === idx 
-                      ? 'border-blue-500 ring-2 ring-blue-200' 
-                      : 'border-gray-200 hover:border-gray-300'
-                  }`}
+                  className={`relative group rounded-lg overflow-hidden border-2 transition-all ${selectedImageIndex === idx
+                    ? 'border-blue-500 ring-2 ring-blue-200'
+                    : 'border-gray-200 hover:border-gray-300'
+                    }`}
                 >
                   <button
                     onClick={() => setSelectedImageIndex(idx)}
@@ -320,14 +319,14 @@ const ViewProduct = ({ token, productId }) => {
                       className="w-full h-20 object-cover"
                     />
                   </button>
-                  
+
                   {/* Main badge */}
                   {img.isMain && (
                     <div className="absolute top-1 right-1 bg-blue-500 text-white text-xs px-1 py-0.5 rounded">
                       Main
                     </div>
                   )}
-                  
+
                   {/* Delete button for thumbnails */}
                   {img.id && (
                     <button
@@ -359,11 +358,11 @@ const ViewProduct = ({ token, productId }) => {
               <span className="font-semibold text-gray-700 w-24">Price:</span>
               {hasDiscount ? (
                 <span className="text-gray-900 font-bold text-lg">
-                  <span className="line-through text-gray-500 mr-2">${basePrice.toFixed(2)}</span>
-                  <span className="text-green-700">${discountedPrice.toFixed(2)}</span>
+                  <span className="line-through text-gray-500 mr-2">{currency} {basePrice.toFixed(2)}</span>
+                  <span className="text-green-700">{currency} {discountedPrice.toFixed(2)}</span>
                 </span>
               ) : (
-                <span className="text-gray-900 font-bold text-lg">${basePrice.toFixed(2)}</span>
+                <span className="text-gray-900 font-bold text-lg">{currency} {basePrice.toFixed(2)}</span>
               )}
             </div>
             {hasDiscount && (
@@ -419,7 +418,7 @@ const ViewProduct = ({ token, productId }) => {
             )}
           </div>
         </div>
-        
+
         {product.description && (
           <div className="mt-4">
             <span className="font-semibold text-gray-700">Description:</span>

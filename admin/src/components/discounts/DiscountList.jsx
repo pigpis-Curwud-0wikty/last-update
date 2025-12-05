@@ -36,13 +36,13 @@ const DiscountList = ({
     try {
       // Call the calculate function with the original price
       const result = await handleCalculateDiscount(calculatingDiscount.id, parseFloat(originalPrice));
-      
+
       if (result) {
         toast.success(`Discount calculation successful: ${result.responseBody?.data}`);
       } else {
         toast.info("No calculation result returned");
       }
-      
+
       // Reset after calculation
       setCalculatingDiscount(null);
       setOriginalPrice("");
@@ -65,7 +65,7 @@ const DiscountList = ({
           <div className="bg-white p-6 rounded-lg shadow-lg w-96">
             <h3 className="text-lg font-medium mb-4">Calculate Discount</h3>
             <p className="mb-2">Enter the original price to calculate the discount for {calculatingDiscount.name}:</p>
-            
+
             <div className="mb-4">
               <label className="block text-sm font-medium text-gray-700 mb-1">Original Price</label>
               <input
@@ -78,7 +78,7 @@ const DiscountList = ({
                 step="0.01"
               />
             </div>
-            
+
             <div className="flex justify-end space-x-2">
               <button
                 onClick={cancelCalculation}
@@ -155,11 +155,10 @@ const DiscountList = ({
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <span
-                        className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
-                          discount.isActive
-                            ? "bg-green-100 text-green-800"
-                            : "bg-red-100 text-red-800"
-                        }`}
+                        className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${discount.isActive
+                          ? "bg-green-100 text-green-800"
+                          : "bg-red-100 text-red-800"
+                          }`}
                       >
                         {discount.isActive ? "Active" : "Inactive"}{" "}
                       </span>
@@ -186,38 +185,39 @@ const DiscountList = ({
                         </button>
                         <button
                           onClick={async () => {
-                            await handleDeleteDiscount(discount.id);
-                            fetchDiscounts();
-                          }}
-                          className="text-red-600 hover:text-red-900"
-                          title="Delete"
-                        >
-                          <FaTrash />
-                        </button>
-                        <button
-                          onClick={async () => {
                             await handleToggleActive(
                               discount.id,
                               discount.isActive
                             );
-                            fetchDiscounts(); // ← here you call it after toggle
                           }}
                           className={`${discount.isActive ? "text-red-600 hover:text-red-900" : "text-green-600 hover:text-green-900"}`}
                           title={discount.isActive ? "Deactivate" : "Activate"}
                         >
                           {discount.isActive ? <FaTimes /> : <FaCheck />}
                         </button>
-
-                        <button
-                          onClick={async () => {
-                            await handleRestoreDiscount(discount.id);
-                            fetchDiscounts();
-                          }}
-                          className="text-amber-600 hover:text-amber-900"
-                          title="Restore"
-                        >
-                          <FaUndo />
-                        </button>
+                        {!discount.isDeleted ? (
+                          <button
+                            onClick={async () => {
+                              await handleDeleteDiscount(discount.id);
+                              fetchDiscounts();
+                            }}
+                            className="text-red-600 hover:text-red-900"
+                            title="Delete"
+                          >
+                            <FaTrash />
+                          </button>
+                        ) : (
+                          <button
+                            onClick={async () => {
+                              await handleRestoreDiscount(discount.id);
+                              fetchDiscounts();
+                            }}
+                            className="text-amber-600 hover:text-amber-900"
+                            title="Restore"
+                          >
+                            <FaUndo />
+                          </button>
+                        )}
                       </div>
                     </td>
                   </tr>
@@ -252,9 +252,11 @@ const DiscountList = ({
             </div>
           </div>
         </div>
-      )}
+      )
+      }
     </div>
   );
 };
+
 
 export default DiscountList;

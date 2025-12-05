@@ -82,7 +82,31 @@ const DiscountManager = ({ token }) => {
         pageSize,
         ...filter
       };
-      
+
+      // Transform 'where' filter to specific params
+      if (filter.where) {
+        switch (filter.where) {
+          case 'active':
+            params.isActive = true;
+            break;
+          case 'inactive':
+            params.isActive = false;
+            break;
+          case 'deleted':
+            params.isDeleted = true;
+            break;
+          case 'expired':
+            params.endDateBefore = new Date().toISOString();
+            break;
+          case 'upcoming':
+            params.startDateAfter = new Date().toISOString();
+            break;
+          default:
+            break;
+        }
+        delete params.where; // Remove the raw 'where' param
+      }
+
       const response = await API.discounts.list(params, token);
       setDiscounts(response?.responseBody?.data || response?.data || []);
       setTotalItems(response?.responseBody?.totalCount || 0);
@@ -235,13 +259,13 @@ const DiscountManager = ({ token }) => {
       setDiscounts((prev) =>
         Array.isArray(prev)
           ? prev.map((d) =>
-              d.id === id ? { ...d, isActive: !currentStatus } : d
-            )
+            d.id === id ? { ...d, isActive: !currentStatus } : d
+          )
           : prev
       );
 
       // تحديث الجدول بعد نجاح العملية
-      await fetchDiscounts();
+      // await fetchDiscounts();
     } catch (error) {
       console.error("Error toggling discount status:", error);
       toast.error(extractApiErrors(error, "Failed to update discount status"));
@@ -308,7 +332,7 @@ const DiscountManager = ({ token }) => {
       [name]: value,
     }));
   };
-  
+
   // Apply filters and fetch discounts
   const handleApplyFilters = () => {
     // Reset to first page when applying new filters
@@ -326,17 +350,15 @@ const DiscountManager = ({ token }) => {
       <div className="flex flex-wrap gap-2 mb-6">
         <button
           onClick={() => setActiveTab("manage")}
-          className={`px-4 py-2 rounded-full transition ${
-            activeTab === "manage" ? "bg-blue-600 text-white shadow" : "bg-gray-100 hover:bg-gray-200 text-gray-700"
-          }`}
+          className={`px-4 py-2 rounded-full transition ${activeTab === "manage" ? "bg-blue-600 text-white shadow" : "bg-gray-100 hover:bg-gray-200 text-gray-700"
+            }`}
         >
           Manage Discounts
         </button>
         <button
           onClick={() => setActiveTab("bulk")}
-          className={`px-4 py-2 rounded-full transition ${
-            activeTab === "bulk" ? "bg-blue-600 text-white shadow" : "bg-gray-100 hover:bg-gray-200 text-gray-700"
-          }`}
+          className={`px-4 py-2 rounded-full transition ${activeTab === "bulk" ? "bg-blue-600 text-white shadow" : "bg-gray-100 hover:bg-gray-200 text-gray-700"
+            }`}
         >
           Bulk Apply
         </button>

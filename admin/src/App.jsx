@@ -19,12 +19,13 @@ import SubCategoryManager from "./pages/SubCategoryManager";
 import ProductDetails from "./pages/ProductDetails";
 import Settings from "./pages/Settings";
 import Users from "./pages/Users";
+import AdminOperations from "./pages/AdminOperations";
 import Login from "./components/layout/Login";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import authService from "./services/authService";
 
-export const currency = "$";
+export const currency = "EGP";
 
 export const backendUrl = import.meta.env.VITE_BACKEND_URL;
 
@@ -148,6 +149,7 @@ function App() {
                     <Route path="/orders" element={<Orders token={token} />} />
                     <Route path="/orders/create" element={<OrderCreate token={token} />} />
                     <Route path="/users" element={<Users token={token} />} />
+                    <Route path="/admin-operations" element={<AdminOperations token={token} />} />
                     <Route path="/settings" element={<Settings token={token} />} />
                     <Route path="/category/view/:categoryId" element={<Collections token={token} backendUrl={backendUrl} />} />
                     <Route path="/category/edit/:categoryId" element={<Collections token={token} backendUrl={backendUrl} />} />

@@ -183,11 +183,11 @@ const ListSubCategory = ({
       if (err.response) {
         console.error("❌ Error Response:", err.response.data);
         console.error("❌ Status:", err.response.status);
-        console.error("❌ Headers:", err.response.headers);
 
         const msg =
           err.response.data?.responseBody?.message ||
           err.response.data?.message ||
+          err.response.data?.error ||
           "Activation failed";
         toast.error(msg);
       } else if (err.request) {
@@ -218,6 +218,7 @@ const ListSubCategory = ({
       const emsg =
         err?.response?.data?.responseBody?.message ||
         err?.response?.data?.message ||
+        err?.response?.data?.error ||
         err?.message ||
         "Deactivation failed";
       toast.error(emsg);
@@ -459,9 +460,8 @@ const ListSubCategory = ({
               <button
                 onClick={() => removeSubCategory(deleteId)}
                 disabled={deleteLoading}
-                className={`px-4 py-2 ${
-                  deleteLoading ? "bg-red-300" : "bg-red-500 hover:bg-red-600"
-                } text-white rounded-md`}
+                className={`px-4 py-2 ${deleteLoading ? "bg-red-300" : "bg-red-500 hover:bg-red-600"
+                  } text-white rounded-md`}
               >
                 {deleteLoading ? "Deleting..." : "Delete"}
               </button>
