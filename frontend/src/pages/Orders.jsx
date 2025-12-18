@@ -18,7 +18,6 @@ const Orders = () => {
   const [statusFilter, setStatusFilter] = useState('All');
   const [sortOrder, setSortOrder] = useState('newest');
 
-  // Status code mapping for numeric statuses
   const statusMap = {
     0: 'Pending Payment',
     1: 'Confirmed',
@@ -31,6 +30,30 @@ const Orders = () => {
     8: 'Payment Expired',
     9: 'Cancelled by Admin',
     10: 'Complete'
+  };
+
+  // Helper function to check if status is pending payment
+  const isPendingPayment = (status) => {
+    if (typeof status === 'number') {
+      return status === 0;
+    }
+    if (typeof status === 'string') {
+      const normalizedStatus = status.toLowerCase().replace(/\s+/g, '');
+      return ['pendingpayment', 'pending'].includes(normalizedStatus);
+    }
+    return false;
+  };
+
+  // Helper function to check if status is confirmed
+  const isConfirmed = (status) => {
+    if (typeof status === 'number') {
+      return status === 1;
+    }
+    if (typeof status === 'string') {
+      const normalizedStatus = status.toLowerCase().replace(/\s+/g, '');
+      return normalizedStatus === 'confirmed';
+    }
+    return false;
   };
 
   // Helper function to get status display text
@@ -91,13 +114,23 @@ const Orders = () => {
               headers: { 'Authorization': `Bearer ${token}` }
             });
             const orderDetail = detailRes.data?.responseBody?.data;
+            console.log(`Order ${order.orderNumber}:`, {
+              status: orderDetail?.status,
+              statusType: typeof orderDetail?.status,
+              payment: orderDetail?.payment
+            });
+
+            // Get the last payment attempted/made
+            const lastPayment = orderDetail?.payment?.length > 0
+              ? orderDetail.payment[orderDetail.payment.length - 1]
+              : null;
 
             // Transform order items to display format using the correct API structure
             const orderItems = (orderDetail?.items || []).map(item => ({
-              id: order.id,
+              id: orderDetail?.id || order.id,
               orderNumber: orderDetail?.orderNumber || order.orderNumber,
               customerName: orderDetail?.customer?.fullName || order.customerName,
-              status: orderDetail?.status || order.status, // Keep numeric status
+              status: orderDetail?.status || order.status, // Keep original status (string or number)
               statusDisplay: getStatusDisplay(orderDetail?.status || order.status), // Add display text
               total: orderDetail?.total || order.total,
               date: orderDetail?.createdAt || order.createdAt,
@@ -110,7 +143,9 @@ const Orders = () => {
               quantity: item.quantity || 1,
               size: item.product?.productVariantForCartDto?.size || 'N/A',
               color: item.product?.productVariantForCartDto?.color || 'N/A',
-              paymentMethod: orderDetail?.payment?.[0]?.paymentMethod?.paymentMethod || 'N/A'
+              paymentMethod: lastPayment?.paymentMethod?.paymentMethod || lastPayment?.paymentMethod || 'N/A',
+              paymentStatus: lastPayment?.status,
+              canBeCancelled: orderDetail?.canBeCancelled
             }));
 
             return orderItems;
@@ -139,6 +174,7 @@ const Orders = () => {
 
       // Flatten the array of order items and reverse for newest first
       const allOrderItems = detailedOrders.flat().reverse();
+      console.log('Sample order item:', allOrderItems[0]);
       setOrderData(allOrderItems);
     } catch (error) {
       console.error("Error loading order data:", error);
@@ -206,6 +242,44 @@ const Orders = () => {
   // Handle Pay button click
   const handlePayClick = (order) => {
     navigate(`/payment/${order.orderNumber}`);
+  };
+
+  // Handle Cancel Order
+  const handleCancelOrder = async (orderId) => {
+    if (!window.confirm('Are you sure you want to cancel this order?')) return;
+
+    const reason = window.prompt("Please enter a reason for cancellation:", "Changed my mind");
+    if (reason === null) return;
+
+    try {
+      setLoading(true);
+      const response = await axios.put(`${backendUrl}/api/Order/${orderId}/status?status=5`,
+        { reason: reason },
+        { headers: { 'Authorization': `Bearer ${token}` } }
+      );
+
+      if (response.data?.success || response.status === 200) {
+        toast.success(response.data?.message || 'Order cancelled successfully');
+        await loadOrderData(); // Reload data
+      } else {
+        toast.error(response.data?.message || 'Failed to cancel order');
+      }
+    } catch (error) {
+      console.error('Error cancelling order:', error);
+      console.error('Error response data:', error.response?.data);
+
+      let errorMessage = 'Error cancelling order';
+      if (error.response?.data) {
+        if (typeof error.response.data === 'string') errorMessage = error.response.data;
+        else if (error.response.data.message) errorMessage = error.response.data.message;
+        else if (error.response.data.error) errorMessage = error.response.data.error;
+        else if (error.response.data.errors) errorMessage = JSON.stringify(error.response.data.errors);
+      }
+
+      toast.error(`Failed: ${errorMessage}`);
+    } finally {
+      setLoading(false);
+    }
   };
 
   // Close modal
@@ -325,43 +399,78 @@ const Orders = () => {
             <p>No orders match the selected filters</p>
           </div>
         ) : (
-          filteredOrders.map((item, index) => (
-            <div key={index} className='py-4 border-t border-b border-gray-300 flex flex-col md:flex-row md:items-center md:justify-between gap-4'>
-              <div className='flex items-start gap-6 text-sm'>
-                <img
-                  className='w-16 sm:w-20 h-16 sm:h-20 object-cover rounded-md'
-                  src={item.image[0]}
-                  alt={item.name}
-                  onError={(e) => {
-                    e.target.src = '/api/placeholder/80/80';
-                  }}
-                />
-                <div>
-                  <p className='sm:text-base font-medium'>{item.name}</p>
-                  <div className='flex items-center gap-3 text-gray-700'>
-                    <p className='text-lg font-medium'>{currency}{item.price}</p>
-                    <p className=''>Quantity: {item.quantity}</p>
-                    <p className=''>Size: {item.size}</p>
-                    <p className=''>Color: {item.color}</p>
+          filteredOrders.map((item, index) => {
+            // Debug logging for button visibility
+            const showPayButton = isPendingPayment(item.status);
+            const showCancelButton = isPendingPayment(item.status) ||
+              (isConfirmed(item.status) && String(item.paymentMethod).toLowerCase().replace(/\s/g, '') === 'cashondelivery');
+
+            console.log(`Order ${item.orderNumber}:`, {
+              status: item.status,
+              statusType: typeof item.status,
+              showPayButton,
+              showCancelButton,
+              paymentMethod: item.paymentMethod
+            });
+
+            return (
+              <div key={index} className='py-4 border-t border-b border-gray-300 flex flex-col md:flex-row md:items-center md:justify-between gap-4'>
+                <div className='flex items-start gap-6 text-sm'>
+                  <img
+                    className='w-16 sm:w-20 h-16 sm:h-20 object-cover rounded-md'
+                    src={item.image[0]}
+                    alt={item.name}
+                    onError={(e) => {
+                      e.target.src = '/api/placeholder/80/80';
+                    }}
+                  />
+                  <div>
+                    <p className='sm:text-base font-medium'>{item.name}</p>
+                    <div className='flex items-center gap-3 text-gray-700'>
+                      <p className='text-lg font-medium'>{currency}{item.price}</p>
+                      <p className=''>Quantity: {item.quantity}</p>
+                      <p className=''>Size: {item.size}</p>
+                      <p className=''>Color: {item.color}</p>
+                    </div>
+                    <p className='mt-2'>Date: <span className='text-gray-400'>{new Date(item.date).toDateString()}</span></p>
+                    <p className='mt-2'>Payment Method: <span className='text-gray-400'>{item.paymentMethod}</span></p>
                   </div>
-                  <p className='mt-2'>Date: <span className='text-gray-400'>{new Date(item.date).toDateString()}</span></p>
-                  <p className='mt-2'>Payment Method: <span className='text-gray-400'>{item.paymentMethod}</span></p>
+                </div>
+                <div className='md:w-1/2 flex justify-between'>
+                  <div className='flex items-center gap-2'>
+                    <p className={`min-w-2 h-2 rounded-full ${isPendingPayment(item.status) ? 'bg-yellow-500' : item.status === 8 ? 'bg-red-500' : 'bg-green-500'}`}></p>
+                    <p className='text-sm md:text-base'>{item.statusDisplay}</p>
+                  </div>
+                  <div className='flex gap-2 font-medium'>
+                    <button onClick={() => handleTrackOrder(item.orderNumber)} className='border px-4 py-2 text-sm font-medium rounded-sm'>Track Order</button>
+
+                    {/* Pay Button - Only for Pending Payment */}
+                    {showPayButton && (
+                      <button
+                        onClick={() => handlePayClick(item)}
+                        className={`border px-4 py-2 text-sm font-medium rounded-sm text-white ${item.paymentStatus && String(item.paymentStatus).toLowerCase() === 'failed'
+                          ? 'bg-red-600 hover:bg-red-700'
+                          : 'bg-black hover:bg-gray-800'
+                          }`}
+                      >
+                        {item.paymentStatus && String(item.paymentStatus).toLowerCase() === 'failed' ? 'Try Pay Again' : 'Pay Now'}
+                      </button>
+                    )}
+
+                    {/* Cancel Button - For Pending OR (Confirmed + COD) */}
+                    {showCancelButton && (
+                      <button
+                        onClick={() => handleCancelOrder(item.id)}
+                        className='border px-4 py-2 text-sm font-medium rounded-sm text-red-600 border-red-600 hover:bg-red-50'
+                      >
+                        Cancel
+                      </button>
+                    )}
+                  </div>
                 </div>
               </div>
-              <div className='md:w-1/2 flex justify-between'>
-                <div className='flex items-center gap-2'>
-                  <p className={`min-w-2 h-2 rounded-full ${item.status === 0 ? 'bg-yellow-500' : item.status === 8 ? 'bg-red-500' : 'bg-green-500'}`}></p>
-                  <p className='text-sm md:text-base'>{item.statusDisplay}</p>
-                </div>
-                <div className='flex gap-2'>
-                  <button onClick={() => handleTrackOrder(item.orderNumber)} className='border px-4 py-2 text-sm font-medium rounded-sm'>Track Order</button>
-                  {(item.status === 0 || item.status === 'Pending Payment') && (
-                    <button onClick={() => handlePayClick(item)} className='border px-4 py-2 text-sm font-medium rounded-sm bg-black text-white hover:bg-gray-800'>Pay Now</button>
-                  )}
-                </div>
-              </div>
-            </div>
-          ))
+            );
+          })
         )}
       </div>
 

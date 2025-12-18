@@ -20,6 +20,7 @@ import VerifyEmail from "./pages/VerifyEmail";
 import ForgotPassword from "./pages/ForgotPassword";
 import ResetPassword from "./pages/ResetPassword";
 import DenimCollection from "./pages/DenimCollection";
+import Collection from "./pages/Collection";
 import Policy from "./pages/Policy";
 import ApiTest from "./components/ApiTest";
 import ChangeEmail from "./pages/ChangeEmail";
@@ -88,7 +89,7 @@ const App = () => {
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/error" element={<Erroe404 />} />
-          <Route path="/collection" element={<CollectionProducts />} />
+          <Route path="/collection" element={<Collection />} />
           <Route path="/about" element={<About />} />
           <Route path="/cart" element={<Cart />} />
           <Route path="/contact" element={<Contact />} />

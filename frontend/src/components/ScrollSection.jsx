@@ -1,6 +1,7 @@
 import React, { useRef, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { useTranslation } from 'react-i18next';
+import { ShopContext } from '../context/ShopContext';
 
 const ScrollSection = ({ scroll1, scroll2 }) => {
     const { t } = useTranslation();
@@ -58,14 +59,34 @@ const ScrollSection = ({ scroll1, scroll2 }) => {
     const imgClass = 'object-cover w-20 h-28 sm:w-24 sm:h-36 md:w-[100px] md:h-[150px]';
 
     // Duplicate content enough times for seamless infinite scroll
-    const items = [
-        { img: scroll1, text: t('DRIP_IN_STYLE') },
-        { img: scroll2, text: t('OWN_THE_STREETS') },
-        { img: scroll1, text: t('DRIP_IN_STYLE') },
-        { img: scroll2, text: t('OWN_THE_STREETS') },
-        { img: scroll1, text: t('DRIP_IN_STYLE') },
-        { img: scroll2, text: t('OWN_THE_STREETS') },
-    ];
+    const { products } = React.useContext(ShopContext || {});
+
+    // Dynamic scroll items from products
+    const dynamicItems = React.useMemo(() => {
+        if (products && products.length > 0) {
+            // Get random products or first N products
+            const shuffled = [...products].sort(() => 0.5 - Math.random());
+            const selected = shuffled.slice(0, 6);
+
+            // Map to scroll items
+            return selected.map((p, i) => ({
+                img: p.image && p.image[0] ? p.image[0] : (i % 2 === 0 ? scroll1 : scroll2),
+                text: i % 2 === 0 ? t('DRIP_IN_STYLE') : t('OWN_THE_STREETS')
+            }));
+        }
+
+        // Fallback to static
+        return [
+            { img: scroll1, text: t('DRIP_IN_STYLE') },
+            { img: scroll2, text: t('OWN_THE_STREETS') },
+            { img: scroll1, text: t('DRIP_IN_STYLE') },
+            { img: scroll2, text: t('OWN_THE_STREETS') },
+            { img: scroll1, text: t('DRIP_IN_STYLE') },
+            { img: scroll2, text: t('OWN_THE_STREETS') },
+        ];
+    }, [products, scroll1, scroll2, t]);
+
+    const items = dynamicItems;
 
     // Animation variants
     const containerVariants = {
@@ -80,16 +101,16 @@ const ScrollSection = ({ scroll1, scroll2 }) => {
     };
 
     const itemVariants = {
-        hidden: { 
-            opacity: 0, 
+        hidden: {
+            opacity: 0,
             y: 50,
             scale: 0.8
         },
-        visible: { 
-            opacity: 1, 
+        visible: {
+            opacity: 1,
             y: 0,
             scale: 1,
-            transition: { 
+            transition: {
                 duration: 0.6,
                 ease: "easeOut"
             }
@@ -107,9 +128,9 @@ const ScrollSection = ({ scroll1, scroll2 }) => {
     };
 
     return (
-        <motion.div 
-            className='my-10 py-10 border-t border-b border-gray-200 overflow-x-auto whitespace-nowrap' 
-            ref={scrollRef} 
+        <motion.div
+            className='my-10 py-10 border-t border-b border-gray-200 overflow-x-auto whitespace-nowrap'
+            ref={scrollRef}
             style={{ scrollBehavior: 'smooth' }}
             variants={containerVariants}
             initial="hidden"
@@ -117,23 +138,23 @@ const ScrollSection = ({ scroll1, scroll2 }) => {
             viewport={{ once: true, amount: 0.3 }}
         >
             {items.map((item, idx) => (
-                <motion.div 
-                    className='inline-flex items-center' 
+                <motion.div
+                    className='inline-flex items-center'
                     key={idx}
                     variants={itemVariants}
                     whileHover="hover"
                     hoverVariants={hoverVariants}
                 >
-                    <motion.img 
-                        src={item.img} 
-                        alt={item.text + idx} 
+                    <motion.img
+                        src={item.img}
+                        alt={item.text + idx}
                         className={imgClass}
                         whileHover={{
                             rotate: [0, -5, 5, 0],
                             transition: { duration: 0.5 }
                         }}
                     />
-                    <motion.p 
+                    <motion.p
                         className={textClass}
                         whileHover={{
                             color: "#3B82F6",

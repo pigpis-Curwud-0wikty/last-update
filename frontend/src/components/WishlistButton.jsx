@@ -2,43 +2,32 @@ import React, { useContext, useState, useEffect } from 'react';
 import { ShopContext } from '../context/ShopContext';
 import { useTranslation } from 'react-i18next';
 
-const WishlistButton = ({ 
-  productId, 
-  className = "", 
-  showText = false, 
+const WishlistButton = ({
+  productId,
+  className = "",
+  showText = false,
   size = "default",
   variant = "default",
   isInWishlist: isInWishlistProp = null
 }) => {
   const { t } = useTranslation();
-  const { 
-    addToWishlist, 
-    removeFromWishlist, 
-    isInWishlist, 
+  const {
+    addToWishlist,
+    removeFromWishlist,
+    wishlistItems,
     wishlistLoading,
-    user 
+    user
   } = useContext(ShopContext);
-  
-  const [isInWishlistState, setIsInWishlistState] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
 
-  // Check if product is in wishlist when component mounts or productId changes
-  useEffect(() => {
-    // If isInWishlistProp is provided, use it directly
-    if (isInWishlistProp !== null) {
-      console.log('Using provided wishlist status for product:', productId, isInWishlistProp);
-      setIsInWishlistState(isInWishlistProp);
-      return;
-    }
-    
-    // Otherwise, fetch the status from the API
-    if (productId && user) {
-      console.log('Using isInWishlist field from product data:', productId, isInWishlistProp);
-      setIsInWishlistState(isInWishlistProp);
-    } else {
-      setIsInWishlistState(false);
-    }
-  }, [productId, user, isInWishlist, isInWishlistProp]);
+  // Check if product is in wishlist using context data
+  const [isLoading, setIsLoading] = useState(false);
+  const isInWishlistState = wishlistItems.some(item => item.id === productId || item.productId === productId);
+
+  // No effect needed - derived state from context
+  React.useEffect(() => {
+    // Optional: Trigger a refresh of wishlist items if empty and user is logged in
+    // But generally, ShopContext should handle initial load.
+  }, []);
 
   const handleToggleWishlist = async (e) => {
     e.preventDefault();
@@ -54,17 +43,17 @@ const WishlistButton = ({
 
     console.log('Toggling wishlist for product:', productId);
     setIsLoading(true);
-    
+
     try {
       if (isInWishlistState) {
         const success = await removeFromWishlist(Number(productId));
         if (success) {
-          setIsInWishlistState(false);
+          // No need to set isInWishlistState here, it's derived from context
         }
       } else {
         const success = await addToWishlist(Number(productId));
         if (success) {
-          setIsInWishlistState(true);
+          // No need to set isInWishlistState here, it's derived from context
         }
       }
     } catch (error) {
@@ -112,9 +101,8 @@ const WishlistButton = ({
         <div className={`animate-spin rounded-full border-b-2 border-current ${iconSizes[size]}`}></div>
       ) : (
         <svg
-          className={`${iconSizes[size]} ${
-            isInWishlistState ? 'text-red-500' : 'text-gray-600'
-          }`}
+          className={`${iconSizes[size]} ${isInWishlistState ? 'text-red-500' : 'text-gray-600'
+            }`}
           fill={isInWishlistState ? 'currentColor' : 'none'}
           viewBox="0 0 24 24"
           stroke="currentColor"
@@ -127,7 +115,7 @@ const WishlistButton = ({
           />
         </svg>
       )}
-      
+
       {showText && (
         <span className="ml-2 text-sm font-medium">
           {isInWishlistState ? t("SAVED") : t("SAVE")}

@@ -23,6 +23,7 @@ const ShopContextProvider = (props) => {
     console.log("Token from localStorage:", storedToken);
     return storedToken || "";
   });
+  const [serverCart, setServerCart] = useState(null); // Store full server cart response
 
   const [user, setUser] = useState(() => {
     const storedUser = localStorage.getItem("user");
@@ -329,8 +330,8 @@ const ShopContextProvider = (props) => {
         finalPrice: p.finalPrice,
         image: Array.isArray(p.images)
           ? p.images
-              .map((img) => img.url || img.imageUrl || img.Url)
-              .filter(Boolean)
+            .map((img) => img.url || img.imageUrl || img.Url)
+            .filter(Boolean)
           : p.mainImageUrl
             ? [p.mainImageUrl]
             : [],
@@ -390,8 +391,8 @@ const ShopContextProvider = (props) => {
                     endDate: discount.endDate,
                     image: Array.isArray(productData.images)
                       ? productData.images
-                          .map((img) => img.url || img.imageUrl || img.Url)
-                          .filter(Boolean)
+                        .map((img) => img.url || img.imageUrl || img.Url)
+                        .filter(Boolean)
                       : productData.mainImageUrl
                         ? [productData.mainImageUrl]
                         : [],
@@ -415,8 +416,8 @@ const ShopContextProvider = (props) => {
               const discountPercentage =
                 originalPrice > 0 && finalPrice < originalPrice
                   ? Math.round(
-                      ((originalPrice - finalPrice) / originalPrice) * 100
-                    )
+                    ((originalPrice - finalPrice) / originalPrice) * 100
+                  )
                   : 0;
 
               return {
@@ -430,8 +431,8 @@ const ShopContextProvider = (props) => {
                 discountName: product.discountName || null,
                 image: Array.isArray(product.images)
                   ? product.images
-                      .map((img) => img.url || img.imageUrl || img.Url)
-                      .filter(Boolean)
+                    .map((img) => img.url || img.imageUrl || img.Url)
+                    .filter(Boolean)
                   : product.mainImageUrl
                     ? [product.mainImageUrl]
                     : [],
@@ -460,8 +461,8 @@ const ShopContextProvider = (props) => {
                 discountName: null,
                 image: Array.isArray(product.images)
                   ? product.images
-                      .map((img) => img.url || img.imageUrl || img.Url)
-                      .filter(Boolean)
+                    .map((img) => img.url || img.imageUrl || img.Url)
+                    .filter(Boolean)
                   : product.mainImageUrl
                     ? [product.mainImageUrl]
                     : [],
@@ -489,7 +490,7 @@ const ShopContextProvider = (props) => {
         // Navigate to error page when all sources fail
         try {
           navigate('/error', { replace: true });
-        } catch {}
+        } catch { }
       }
     }
   };
@@ -513,6 +514,9 @@ const ShopContextProvider = (props) => {
         console.log("Cart fetch response:", data);
 
         if (data.responseBody && data.responseBody.data) {
+          // 🆕 STORE SERVER CART DATA
+          setServerCart(data.responseBody.data);
+
           let serverCartItems = data.responseBody.data;
 
           // Handle different response structures
@@ -581,7 +585,7 @@ const ShopContextProvider = (props) => {
         console.log("Fetching wishlist...");
         const response = await wishlistService.getWishlist(1, 20, refreshToken);
         console.log("Wishlist API response:", response);
-    
+
         if (response.success) {
           setWishlist(response.data);
           console.log("Wishlist updated successfully:", response.data);
@@ -636,7 +640,7 @@ const ShopContextProvider = (props) => {
       toast.error("Please log in to add items to your wishlist.");
       return;
     }
-  
+
     try {
       const response = await fetchWithTokenRefresh(
         `${backendUrl}/api/Wishlist/${productId}`,
@@ -647,7 +651,7 @@ const ShopContextProvider = (props) => {
         },
         refreshToken
       );
-  
+
       if (response.ok) {
         toast.success("Item added to wishlist.");
         await fetchWishlist(); // Refresh wishlist
@@ -723,7 +727,7 @@ const ShopContextProvider = (props) => {
 
       if (result.success) {
         console.log("Wishlist data received:", result.data);
-        
+
         // Check if data is an array and has items
         if (Array.isArray(result.data) && result.data.length > 0) {
           console.log("Setting wishlist items:", result.data);
@@ -879,7 +883,9 @@ const ShopContextProvider = (props) => {
     fetchWishlist,
     isInWishlist,
     clearWishlist,
+    clearWishlist,
     getWishlistCount,
+    serverCart, // Expose server cart data
   };
 
   return (

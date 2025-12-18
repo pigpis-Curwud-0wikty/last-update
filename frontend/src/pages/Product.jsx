@@ -480,39 +480,19 @@ const Product = () => {
               <p className="text-sm text-gray-700">{productData.description}</p>
             </div>
 
-            {/* Model Information */}
-            <div className="mb-6">
-              <div className="text-sm text-gray-600 mb-2">
-                <p className="mb-1">Female model wears: Size Small/Medium</p>
-                <p>Model's height: {selectedVariant?.height || "176cm"}</p>
+            {/* Generic Fit & Material Info */}
+            <div className="mb-6 space-y-4">
+              <div className="text-sm text-gray-600 bg-gray-50 p-4 rounded-md">
+                <p className="font-medium mb-1 text-black">Fit & Sizing</p>
+                <p>Designed for a comfortable, regular fit. We recommend ordering your usual size.</p>
+                <p className="mt-2 text-xs text-gray-500">Please refer to the Size Guide for detailed measurements.</p>
               </div>
-              <div className="text-sm text-gray-600">
-                <p>Oversized fit - shop accordingly</p>
+
+              <div className="text-sm text-gray-600 bg-gray-50 p-4 rounded-md">
+                <p className="font-medium mb-1 text-black">Material & Care</p>
+                <p>Premium quality fabric designed for durability and comfort.</p>
+                <p className="mt-1">Machine wash cold with like colors.</p>
               </div>
-            </div>
-
-            {/* Divider */}
-            <div className="border-t border-gray-200 my-4"></div>
-
-            {/* Looking After Me Section */}
-            <div className="mb-6">
-              <p className="text-sm font-medium mb-2 uppercase">
-                LOOKING AFTER ME
-              </p>
-              <p className="text-sm text-gray-600">
-                Machine wash according to instructions on price tag
-              </p>
-            </div>
-
-            {/* Divider */}
-            <div className="border-t border-gray-200 my-4"></div>
-
-            {/* About Me Section */}
-            <div className="mb-6">
-              <p className="text-sm font-medium mb-2 uppercase">ABOUT ME</p>
-              <p className="text-sm text-gray-600">
-                Fabric made of 100% cotton
-              </p>
             </div>
 
             {/* Divider */}
@@ -605,10 +585,10 @@ const Product = () => {
                                 const hasDiscount = finalPrice < originalPrice;
                                 const discountPercentage = hasDiscount
                                   ? Math.round(
-                                      ((originalPrice - finalPrice) /
-                                        originalPrice) *
-                                        100
-                                    )
+                                    ((originalPrice - finalPrice) /
+                                      originalPrice) *
+                                    100
+                                  )
                                   : 0;
 
                                 return (
@@ -658,8 +638,8 @@ const Product = () => {
                     const rawSizes =
                       variants.length > 0
                         ? Array.from(
-                            new Set(variants.map((v) => v.size))
-                          ).filter(Boolean)
+                          new Set(variants.map((v) => v.size))
+                        ).filter(Boolean)
                         : productData.sizes || [];
                     // Map to labels and unique
                     const allSizes = Array.from(
@@ -672,10 +652,10 @@ const Product = () => {
                           // Find variant with this size and selected color (if any)
                           const matchingVariant = selectedVariant
                             ? variants.find(
-                                (v) =>
-                                  mapSizeToLabel(v.size) === sizeItem &&
-                                  v.color === selectedVariant.color
-                              )
+                              (v) =>
+                                mapSizeToLabel(v.size) === sizeItem &&
+                                v.color === selectedVariant.color
+                            )
                             : null;
 
                           // Get available colors for this size
@@ -749,22 +729,22 @@ const Product = () => {
 
               {/* Variants Table (color/size/waist/length/qty/id) */}
               {variants?.length > 0 && (
-                <div className="mb-6">
-                  <h3 className="text-sm font-medium mb-2">{t("VARIANTS")}</h3>
+                <div className="mb-6 border border-gray-200 rounded-lg shadow-sm overflow-hidden">
+                  <div className="bg-gray-50 px-4 py-2 border-b border-gray-200">
+                    <h3 className="text-sm font-medium text-gray-700">{t("VARIANTS")}</h3>
+                  </div>
                   <div className="overflow-x-auto">
                     <table className="min-w-full text-sm">
                       <thead>
-                        <tr className="text-left text-gray-600">
-                          <th className="py-2 pr-4">Color</th>
-                          <th className="py-2 pr-4">Size</th>
-                          <th className="py-2 pr-4">Waist</th>
-                          <th className="py-2 pr-4">Length</th>
-                          <th className="py-2 pr-4">Qty</th>
-                          <th className="py-2 pr-4">ID</th>
-                          <th className="py-2 pr-4"></th>
+                        <tr className="text-left text-gray-600 bg-gray-50">
+                          <th className="py-3 px-4 font-medium">Color</th>
+                          <th className="py-3 px-4 font-medium">Size</th>
+                          <th className="py-3 px-4 font-medium">Waist</th>
+                          <th className="py-3 px-4 font-medium">Length</th>
+                          <th className="py-3 px-4 font-medium text-right">Action</th>
                         </tr>
                       </thead>
-                      <tbody>
+                      <tbody className="divide-y divide-gray-100">
                         {[...variants]
                           .sort(
                             (a, b) =>
@@ -773,41 +753,43 @@ const Product = () => {
                               ) || (Number(a.size) || 0) - (Number(b.size) || 0)
                           )
                           .map((v) => (
-                            <tr key={v.id} className="border-t">
-                              <td className="py-2 pr-4">
-                                <span className="inline-flex items-center px-2 py-1 rounded bg-gray-100 text-gray-800">
+                            <tr key={v.id} className="hover:bg-gray-50 transition-colors">
+                              <td className="py-3 px-4">
+                                <span className="inline-flex items-center px-2 py-1 rounded-full bg-gray-100 text-xs font-medium text-gray-800">
                                   {String(v.color || "-")}
                                 </span>
                               </td>
-                              <td className="py-2 pr-4">
+                              <td className="py-3 px-4 font-medium text-gray-900">
                                 {mapSizeToLabel(v.size)}
                               </td>
-                              <td className="py-2 pr-4">{v.waist ?? "-"}</td>
-                              <td className="py-2 pr-4">{v.length ?? "-"}</td>
-                              <td className="py-2 pr-4">
-                                <span
-                                  className={
-                                    Number(v.quantity) > 0 ? "" : "text-red-500"
-                                  }
-                                >
-                                  {v.quantity ?? 0}
-                                </span>
-                              </td>
-                              <td className="py-2 pr-4">{v.id}</td>
-                              <td className="py-2 pr-4">
+                              <td className="py-3 px-4 text-gray-500">{v.waist ?? "-"}</td>
+                              <td className="py-3 px-4 text-gray-500">{v.length ?? "-"}</td>
+                              <td className="py-3 px-4 text-right">
                                 <button
-                                  className="text-xs border px-3 py-1 hover:bg-black hover:text-white transition"
+                                  className={`text-xs px-4 py-2 rounded border transition-all duration-200 font-medium ${selectedVariant?.id === v.id
+                                    ? "bg-black text-white border-black"
+                                    : "border-gray-300 hover:border-black hover:bg-black hover:text-white"
+                                    }`}
                                   onClick={async () => {
-                                    setSelectedVariant(v);
-                                    setSize(mapSizeToLabel(v.size));
-                                    const detail = await fetchVariantDetails(
-                                      v.id
-                                    );
-                                    if (detail?.images?.length)
-                                      setImage(detail.images[0]);
+                                    // Toggle logic
+                                    if (selectedVariant?.id === v.id) {
+                                      // Deselect
+                                      setSelectedVariant(null);
+                                      setSize("");
+                                      setImage(productData.image[0]); // Revert to default image
+                                    } else {
+                                      // Select
+                                      setSelectedVariant(v);
+                                      setSize(mapSizeToLabel(v.size));
+                                      const detail = await fetchVariantDetails(
+                                        v.id
+                                      );
+                                      if (detail?.images?.length)
+                                        setImage(detail.images[0]);
+                                    }
                                   }}
                                 >
-                                  {t("SELECT")}
+                                  {selectedVariant?.id === v.id ? "SELECTED" : t("SELECT")}
                                 </button>
                               </td>
                             </tr>
@@ -945,8 +927,8 @@ const Product = () => {
                 </span>
                 <button
                   className="w-8 h-8 border border-gray-300 flex items-center justify-center hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
-                  onClick={() => setQuantity(Math.min(99, quantity + 1))}
-                  disabled={quantity >= 99}
+                  onClick={() => setQuantity(Math.min(10, quantity + 1))}
+                  disabled={quantity >= 10}
                 >
                   +
                 </button>
@@ -1014,14 +996,6 @@ const Product = () => {
                   );
                   // Update local stock
                   updateLocalStock(selectedVariant?.id, quantity);
-                  toast.success("Product added to cart!", {
-                    position: "top-right",
-                    autoClose: 2000,
-                    hideProgressBar: false,
-                    closeOnClick: true,
-                    pauseOnHover: true,
-                    draggable: true,
-                  });
                 }}
                 disabled={!size || !selectedVariant?.color}
               >
@@ -1072,7 +1046,7 @@ const Product = () => {
                               key={idx}
                               src={img}
                               alt={`${selectedVariant.color} variant ${idx + 1}`}
-                              className={`w-16 h-16 object-cover cursor-pointer ${image === img ? "border-2 border-black" : "border border-gray-200"}`}
+                              className={`w-16 h-16 object-contain bg-gray-50 cursor-pointer ${image === img ? "border-2 border-black" : "border border-gray-200"}`}
                               onClick={() => setImage(img)}
                             />
                           )
@@ -1085,49 +1059,9 @@ const Product = () => {
                   <div className="text-gray-600">{t("COLOR")}:</div>
                   <div>{selectedVariant.color || "-"}</div>
 
-                  <div className="text-gray-600">{t("SIZE")}:</div>
-                  <div>{selectedVariant.size || "-"}</div>
+                  {/* Size removed as requested */}
 
-                  <div className="text-gray-600">{t("PRICE")}:</div>
-                  <div>
-                    {(() => {
-                      // Use same logic as ProductCard for variant pricing
-                      const originalPrice = selectedVariant.price || 0;
-                      const finalPrice =
-                        selectedVariant.finalPrice || originalPrice;
-                      const hasDiscount = finalPrice < originalPrice;
-                      const discountPercentage = hasDiscount
-                        ? Math.round(
-                            ((originalPrice - finalPrice) / originalPrice) * 100
-                          )
-                        : 0;
-
-                      return (
-                        <div className="flex items-center gap-1">
-                          {hasDiscount ? (
-                            <>
-                              <span className="text-sm font-medium text-gray-900">
-                                {productData.currency || "$"}
-                                {finalPrice}
-                              </span>
-                              <span className="text-xs text-gray-500 line-through">
-                                {productData.currency || "$"}
-                                {originalPrice}
-                              </span>
-                              <span className="bg-red-500 text-white text-xs px-2 py-1 rounded">
-                                {discountPercentage}% OFF
-                              </span>
-                            </>
-                          ) : (
-                            <span className="text-sm font-medium text-gray-900">
-                              {productData.currency || "$"}
-                              {originalPrice}
-                            </span>
-                          )}
-                        </div>
-                      );
-                    })()}
-                  </div>
+                  {/* Price removed as requested */}
 
                   {selectedVariant.waist && (
                     <>
@@ -1188,36 +1122,16 @@ const Product = () => {
           </div>
         </div>
       </motion.div>
-      {/* Description & Reviews Section */}
+      {/* Description Section */}
       <div className="mt-20">
-        <div className="flex">
-          <b className="border border-gray-200 px-5 py-3 text-sm">
-            {t("DESCRIPTION")}
-          </b>
-          <p className="border border-gray-200 px-5 py-3 text-sm">
-            {t("REVIEWS")} (122)
-          </p>
-        </div>
-        <div className="flex flex-col gap-4 border border-gray-200 px-6 py-6 text-sm text-gray-500">
-          <p>{t("PRODUCT_DESC_1")}</p>
-          <p>{t("PRODUCT_DESC_2")}</p>
+        <h2 className="text-2xl font-medium text-gray-900 mb-6">{t("DESCRIPTION")}</h2>
+        <div className="bg-gray-50 rounded-xl p-8 text-gray-600 leading-relaxed border border-gray-100">
+          <p className="mb-4">{productData.name} - Designed for modern living.</p>
+          <p>{productData.description}</p>
         </div>
       </div>
 
-      {/* Product Video Section */}
-      <div className="w-full flex justify-center items-center my-10">
-        <div className="relative w-full max-w-4xl aspect-video rounded-lg overflow-hidden shadow-lg">
-          <iframe
-            src="https://player.vimeo.com/video/1039701935?background=1"
-            title={t("PRODUCT_VIDEO")}
-            frameBorder="0"
-            allow="autoplay; encrypted-media;"
-            allowFullScreen
-            className="absolute top-0 left-0 w-full h-full"
-            tabIndex="-1"
-          ></iframe>
-        </div>
-      </div>
+      {/* Video Section Removed */}
 
       {/* Scroll Section */}
       <div
@@ -1410,8 +1324,8 @@ const Product = () => {
                       const rawSizes =
                         variants.length > 0
                           ? Array.from(
-                              new Set(variants.map((v) => v.size))
-                            ).filter(Boolean)
+                            new Set(variants.map((v) => v.size))
+                          ).filter(Boolean)
                           : productData.sizes || [];
                       const allSizes = Array.from(
                         new Set(rawSizes.map((s) => mapSizeToLabel(s)))
@@ -1425,13 +1339,13 @@ const Product = () => {
                             // Find matching variant with selected color and size
                             const matchingVariant = selectedVariant?.color
                               ? variants.find(
-                                  (v) =>
-                                    mapSizeToLabel(v.size) === labelSize &&
-                                    v.color === selectedVariant.color
-                                )
+                                (v) =>
+                                  mapSizeToLabel(v.size) === labelSize &&
+                                  v.color === selectedVariant.color
+                              )
                               : variants.find(
-                                  (v) => mapSizeToLabel(v.size) === labelSize
-                                );
+                                (v) => mapSizeToLabel(v.size) === labelSize
+                              );
 
                             if (matchingVariant) {
                               const variantDetail = await fetchVariantDetails(
@@ -1485,8 +1399,8 @@ const Product = () => {
                       const rawSizes =
                         variants.length > 0
                           ? Array.from(
-                              new Set(variants.map((v) => v.size))
-                            ).filter(Boolean)
+                            new Set(variants.map((v) => v.size))
+                          ).filter(Boolean)
                           : productData.sizes || [];
                       const allSizes = Array.from(
                         new Set(rawSizes.map((s) => mapSizeToLabel(s)))
@@ -1563,14 +1477,6 @@ const Product = () => {
                 );
                 // Update local stock
                 updateLocalStock(selectedVariant?.id, quantity);
-                toast.success("Product added to cart!", {
-                  position: "top-right",
-                  autoClose: 2000,
-                  hideProgressBar: false,
-                  closeOnClick: true,
-                  pauseOnHover: true,
-                  draggable: true,
-                });
               }}
             >
               +
@@ -1681,8 +1587,8 @@ const Product = () => {
                   const rawSizes =
                     variants.length > 0
                       ? Array.from(new Set(variants.map((v) => v.size))).filter(
-                          Boolean
-                        )
+                        Boolean
+                      )
                       : productData.sizes || [];
                   const allSizes = Array.from(
                     new Set(rawSizes.map((s) => mapSizeToLabel(s)))

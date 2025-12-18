@@ -36,19 +36,22 @@ const NewLetterBox = () => {
       whileInView="visible"
       viewport={{ once: true, amount: 0.3 }}
       variants={itemVariants}
-      className="text-center my-20">
+      className="text-center my-20 bg-gray-50 py-12 px-4 rounded-xl mx-4 sm:mx-auto max-w-4xl shadow-sm">
       <p className="text-2xl font-medium text-gray-800">
-        {t('NEWSLETTER_TITLE')}
+        Join The Community
       </p>
-      <p className="text-gray-400 mt-4">
-        {t('NEWSLETTER_DESC')}
+      <p className="text-gray-500 mt-3 text-sm">
+        Be the first to know about new arrivals and exclusive drops.
       </p>
+
+      {/* Description removed as requested */}
+
       <form
         onSubmit={onSubmitHanndler}
-        className="w-full sm:w-1/2 flex items-center gap-3 mx-auto my-6 border border-gray-300 pl-3"
+        className="w-full sm:w-3/4 flex items-center gap-3 mx-auto my-6 border border-gray-300 pl-3 bg-white rounded overflow-hidden"
       >
         <input
-          className="w-full sm:flex-1 outline-none"
+          className="w-full sm:flex-1 outline-none py-3"
           type="email"
           placeholder={t('NEWSLETTER_PLACEHOLDER')}
           required
@@ -57,7 +60,7 @@ const NewLetterBox = () => {
         />
         <button
           type="submit"
-          className="bg-black text-white text-xs px-10 py-4"
+          className="bg-black text-white text-xs px-10 py-4 hover:bg-gray-800 transition-colors duration-300"
         >
           {t('NEWSLETTER_SUBSCRIBE')}
         </button>

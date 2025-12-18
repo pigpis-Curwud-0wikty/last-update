@@ -342,6 +342,18 @@ const PlaceOrder = () => {
             window.location.href = redirectUrlWithReturn;
           } else {
             console.log("Payment completed without redirect");
+            // Clear cart after successful payment
+            try {
+              await axios.delete(`${backendUrl}/api/Cart/items/clear`, {
+                headers: { Authorization: `Bearer ${token}` },
+              });
+              setCartItems({}); // Clear global state
+              // Local storage clearing if needed
+              localStorage.removeItem('cartItems');
+            } catch (clearError) {
+              console.error("Failed to clear cart after order:", clearError);
+            }
+
             toast.success("Payment processed successfully!");
             navigate("/orders");
           }

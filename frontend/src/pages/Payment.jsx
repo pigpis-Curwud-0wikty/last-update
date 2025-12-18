@@ -94,6 +94,7 @@ const Payment = () => {
             }
 
             const paymentData = {
+                orderId: orderData?.id,
                 orderNumber: orderNumber,
                 paymentDetails: {
                     walletPhoneNumber: walletPhoneNumber || "",
@@ -102,6 +103,8 @@ const Payment = () => {
                     notes: paymentNotes || ""
                 }
             };
+
+            console.log("Sending payment request:", paymentData);
 
             const paymentResponse = await axios.post(
                 `${backendUrl}/api/Payment`,
@@ -137,7 +140,47 @@ const Payment = () => {
             }
         } catch (error) {
             console.error("Error processing payment:", error);
-            toast.error(error.response?.data?.responseBody?.message || "Failed to process payment");
+            console.error("Error response data:", error.response?.data);
+
+            let errorMessage = "Failed to process payment";
+            const errData = error.response?.data;
+            if (errData) {
+                if (typeof errData === 'string') errorMessage = errData;
+                else if (typeof errData === 'object') {
+                    if (errData.responseBody?.message) errorMessage = errData.responseBody.message;
+                    else if (errData.message) errorMessage = errData.message;
+                    else if (errData.error) errorMessage = errData.error;
+                    else if (errData.errors) errorMessage = JSON.stringify(errData.errors);
+                }
+            }
+
+            toast.error(errorMessage);
+        } finally {
+            setProcessingPayment(false);
+        }
+    };
+
+    // Handle Cancel Order
+    const handleCancelOrder = async () => {
+        if (!window.confirm('Are you sure you want to cancel this order?')) return;
+
+        setProcessingPayment(true);
+        try {
+            const response = await axios.put(`${backendUrl}/api/Order/${orderData?.id || orderNumber}/status?status=5`, {}, {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+
+            if (response.data?.success || response.status === 200) {
+                toast.success(response.data?.message || 'Order cancelled successfully');
+                navigate('/orders');
+            } else {
+                toast.error(response.data?.message || 'Failed to cancel order');
+            }
+        } catch (error) {
+            console.error('Error cancelling order:', error);
+            console.error('Error response data:', error.response?.data);
+            const errorMessage = error.response?.data?.message || error.response?.data?.error || 'Error cancelling order';
+            toast.error(`Failed: ${errorMessage}`);
         } finally {
             setProcessingPayment(false);
         }
@@ -194,8 +237,8 @@ const Payment = () => {
                                     key={method.id}
                                     onClick={() => setSelectedPaymentMethod(method.id)}
                                     className={`border rounded-md p-4 cursor-pointer flex items-center justify-between transition-all ${selectedPaymentMethod === method.id
-                                            ? 'border-green-500 bg-green-50 ring-1 ring-green-500'
-                                            : 'border-gray-200 hover:border-gray-300'
+                                        ? 'border-green-500 bg-green-50 ring-1 ring-green-500'
+                                        : 'border-gray-200 hover:border-gray-300'
                                         }`}
                                 >
                                     <div className="flex items-center gap-3">
@@ -242,24 +285,37 @@ const Payment = () => {
                             />
                         </div>
 
-                        <div className="flex gap-3">
-                            <button
-                                onClick={() => navigate('/orders')}
-                                className="flex-1 px-4 py-3 border border-gray-300 rounded text-gray-700 hover:bg-gray-50 font-medium transition-colors"
-                                disabled={processingPayment}
-                            >
-                                Cancel
-                            </button>
-                            <button
-                                onClick={handlePayment}
-                                disabled={!selectedPaymentMethod || processingPayment}
-                                className={`flex-1 px-4 py-3 rounded text-white font-medium transition-colors ${!selectedPaymentMethod || processingPayment
+                        <div className="flex flex-col gap-3">
+                            <div className="flex gap-3">
+                                <button
+                                    onClick={() => navigate('/orders')}
+                                    className="flex-1 px-4 py-3 border border-gray-300 rounded text-gray-700 hover:bg-gray-50 font-medium transition-colors"
+                                    disabled={processingPayment}
+                                >
+                                    Back
+                                </button>
+                                <button
+                                    onClick={handlePayment}
+                                    disabled={!selectedPaymentMethod || processingPayment}
+                                    className={`flex-1 px-4 py-3 rounded text-white font-medium transition-colors ${!selectedPaymentMethod || processingPayment
                                         ? 'bg-gray-400 cursor-not-allowed'
                                         : 'bg-black hover:bg-gray-800'
-                                    }`}
-                            >
-                                {processingPayment ? 'Processing...' : `Pay ${currency}${orderData?.total}`}
-                            </button>
+                                        }`}
+                                >
+                                    {processingPayment ? 'Processing...' : `Pay ${currency}${orderData?.total}`}
+                                </button>
+                            </div>
+
+                            {/* Cancel Order Button - Only if status is pending/consistent with what allows cancellation */}
+                            {(orderData?.status === 0 || orderData?.status === 'Pending Payment' || orderData?.canBeCancelled) && (
+                                <button
+                                    onClick={handleCancelOrder}
+                                    disabled={processingPayment}
+                                    className="w-full px-4 py-3 border border-red-500 text-red-500 rounded font-medium hover:bg-red-50 transition-colors mt-2"
+                                >
+                                    Cancel Order
+                                </button>
+                            )}
                         </div>
                     </div>
                 </div>

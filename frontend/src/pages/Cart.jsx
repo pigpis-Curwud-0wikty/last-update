@@ -17,6 +17,7 @@ const Cart = () => {
     backendUrl,
     checkout,
     setCartItems,
+    serverCart, // 🆕 Get server cart data
   } = useContext(ShopContext);
   const [cartData, setCartData] = useState([]);
   const [errorMessage, setErrorMessage] = useState(""); // 🛠️ Error state
@@ -24,28 +25,49 @@ const Cart = () => {
   const token = localStorage.getItem("token");
 
   useEffect(() => {
-    const tempData = [];
-    for (const items in cartItems) {
-      for (const item in cartItems[items]) {
-        if (cartItems[items][item] > 0) {
-          // Parse size and color from the item key (format: "size_color" or just "size")
-          const parts = item.split('_');
-          const size = parts[0];
-          const color = parts[1] || 'Unknown'; // Default to 'Unknown' if no color
-          
-          console.log('Cart item parsing:', { item, size, color, cartItems: cartItems[items] });
-          tempData.push({
-            _id: items,
-            quantity: cartItems[items][item],
-            size: size,
-            color: color,
-          });
+    // 🆕 Extract items correctly whether serverCart is an array or object
+    const cartItemsList = Array.isArray(serverCart)
+      ? serverCart
+      : (serverCart?.items || []);
+
+    if (cartItemsList.length > 0) {
+      // 🆕 Use server cart data directly if available
+      console.log("Using server cart data:", cartItemsList);
+      const tempData = cartItemsList.map(item => ({
+        _id: item.productId || (item.product ? item.product.id : null),
+        quantity: item.quantity,
+        size: item.productVariant?.size || item.product?.productVariantForCartDto?.size || item.size || 'Unknown',
+        color: item.productVariant?.color || item.product?.productVariantForCartDto?.color || item.color || 'Unknown',
+        variantId: item.productVariantId || item.productVariant?.id || item.product?.productVariantForCartDto?.id, // Store variant ID for actions
+        productData: item.product, // Store full product data
+        price: item.product?.finalPrice || item.product?.price,
+        image: item.productVariant?.images?.[0]?.url || item.product?.mainImageUrl || item.product?.image?.[0]
+      })).filter(item => item._id); // Filter out invalid items
+
+      setCartData(tempData);
+    } else {
+      // 🔄 Fallback to local cart reconstruction
+      const tempData = [];
+      for (const items in cartItems) {
+        for (const item in cartItems[items]) {
+          if (cartItems[items][item] > 0) {
+            // Parse size and color from the item key (format: "size_color" or just "size")
+            const parts = item.split('_');
+            const size = parts[0];
+            const color = parts[1] || 'Unknown'; // Default to 'Unknown' if no color
+
+            tempData.push({
+              _id: items,
+              quantity: cartItems[items][item],
+              size: size,
+              color: color,
+            });
+          }
         }
       }
+      setCartData(tempData);
     }
-    console.log('Cart data after parsing:', tempData);
-    setCartData(tempData);
-  }, [cartItems]);
+  }, [cartItems, serverCart]);
 
   // 🗑️ Delete single item
   const handleDeleteItem = async (productId, productVariantId) => {
@@ -77,13 +99,13 @@ const Cart = () => {
         const next = structuredClone(prev);
         if (next[productId]) {
           // Find the item key that matches the size and color
-          const itemToDelete = cartData.find(item => 
+          const itemToDelete = cartData.find(item =>
             item._id === productId && item.size === productVariantId
           );
           if (itemToDelete) {
             // Handle both old format (just size) and new format (size_color)
-            const itemKey = itemToDelete.color && itemToDelete.color !== 'Unknown' 
-              ? `${itemToDelete.size}_${itemToDelete.color}` 
+            const itemKey = itemToDelete.color && itemToDelete.color !== 'Unknown'
+              ? `${itemToDelete.size}_${itemToDelete.color}`
               : itemToDelete.size;
             delete next[productId][itemKey];
             if (Object.keys(next[productId]).length === 0) {
@@ -195,7 +217,8 @@ const Cart = () => {
         variants={containerVariants}
       >
         {cartData.map((item, index) => {
-          const productData = products.find(
+          // 🆕 Use product data linked in item if available, otherwise look it up
+          const productData = item.productData || products.find(
             (product) => String(product._id) === String(item._id)
           );
           if (!productData) return null;
@@ -208,7 +231,7 @@ const Cart = () => {
             >
               <div className="flex items-start gap-6">
                 <img
-                  src={productData.image[0]}
+                  src={item.image || (productData.image && productData.image[0]) || ""}
                   alt={productData.name}
                   className="w-16 sm:w-20"
                 />
@@ -219,7 +242,7 @@ const Cart = () => {
                   <div className="flex items-center gap-4 mt-2">
                     <p>
                       {currency}
-                      {productData.finalPrice || productData.price}
+                      {item.price || productData.finalPrice || productData.price}
                     </p>
                     <div className="flex items-center gap-2">
                       <p className="px-2 sm:px-3 sm:py-1 border border-gray-300 bg-slate-50">
@@ -227,9 +250,9 @@ const Cart = () => {
                       </p>
                       <div className="flex items-center gap-2">
                         <span className="text-sm">Color:</span>
-                        <div 
+                        <div
                           className="w-6 h-6 rounded-full border border-gray-300 flex items-center justify-center"
-                          style={{ 
+                          style={{
                             backgroundColor: item.color?.toLowerCase() || '#000000',
                             minWidth: '24px',
                             minHeight: '24px'
@@ -256,7 +279,7 @@ const Cart = () => {
                 disabled={loading}
                 onChange={(e) =>
                   e.target.value === "" || e.target.value === "0"
-                    ? handleDeleteItem(item._id, item.size)
+                    ? handleDeleteItem(item._id, item.variantId || item.size)
                     : updataQuantity(
                       item._id,
                       item.size,
@@ -271,7 +294,7 @@ const Cart = () => {
                 src={assets.bin_icon}
                 alt=""
                 onClick={() =>
-                  !loading && handleDeleteItem(item._id, item.size)
+                  !loading && handleDeleteItem(item._id, item.variantId || item.size)
                 }
               />
             </motion.div>
@@ -300,7 +323,7 @@ const Cart = () => {
                 try {
                   const success = await checkout();
                   if (success) {
-                    toast.success("Checkout successful!");
+                    // Navigate to place order
                     navigate("/place-order");
                   }
                 } catch (error) {
