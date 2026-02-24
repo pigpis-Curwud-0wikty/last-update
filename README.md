@@ -52,14 +52,6 @@ The backend API was developed by **Omar Gamal**.
 <img width="1920" height="834" alt="image" src="https://github.com/user-attachments/assets/676ec785-e552-4a30-a21b-cb5e20059bda" />
 
 
-src/
-├── components/
-├── pages/
-├── services/
-├── assets/
-└── App.js
----
-
 
 ---
 
